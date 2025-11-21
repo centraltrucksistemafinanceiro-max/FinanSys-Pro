@@ -1,0 +1,5 @@
+{
+  "name": "FinanSys Pro 7",
+  "description": "A complete financial management system with a Windows 10-style interface, featuring a desktop, start menu, floating windows, and a fixed taskbar. It includes cash flow management, an interactive dashboard with charts, a financial calculator, and extensive personalization options.",
+  "requestFramePermissions": []
+}
