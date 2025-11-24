@@ -57,16 +57,34 @@
             padding: 0 !important;
             overflow: visible !important;
             position: static !important;
+            display: block !important;
         }
 
         /* Hide standard UI elements */
-        .taskbar, header, .window-controls, .no-print, button, .pagination-controls, .resize-handle {
+        .taskbar, header, .window-controls, .no-print, button, .pagination-controls, .resize-handle, .desktop-icons {
             display: none !important;
         }
 
         /* Default visibility hidden for everything to strip background UI */
         body * {
             visibility: hidden;
+        }
+
+        /* Reset Window Frame (Rnd component) constraints */
+        /* This is crucial to allow content to break out of the transformed window box */
+        .window-frame {
+            transform: none !important;
+            position: static !important;
+            width: 100% !important;
+            height: auto !important;
+            border: none !important;
+            box-shadow: none !important;
+            overflow: visible !important;
+            display: block !important;
+            visibility: visible !important; /* Parent must be visible for child to be visible */
+            margin: 0 !important;
+            left: 0 !important;
+            top: 0 !important;
         }
 
         /* Specific Logic for Printable Dashboard */
@@ -87,14 +105,15 @@
             color: black !important;
             overflow: visible !important;
             z-index: 9999 !important;
-            display: block !important; /* Ensure it's not flex/grid constrained */
+            display: block !important;
         }
 
         /* Force all scrollable containers inside dashboard to expand */
         .printable-dashboard .overflow-y-auto,
         .printable-dashboard .overflow-auto,
         .printable-dashboard .flex-grow,
-        .printable-dashboard .h-full {
+        .printable-dashboard .h-full,
+        .printable-dashboard .flex-col {
             overflow: visible !important;
             height: auto !important;
             max-height: none !important;

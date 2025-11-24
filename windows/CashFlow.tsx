@@ -199,7 +199,7 @@ const CashFlow: React.FC = () => {
       setIsPrinting(true);
       setTimeout(() => {
           window.print();
-      }, 500); // Increased timeout to allow rendering of all items
+      }, 1000); // Increased timeout to allow rendering of all items
   };
 
   useEffect(() => {

@@ -51,7 +51,7 @@ const Window: React.FC<WindowProps> = ({ instance, app }) => {
       disableDragging={instance.isMaximized}
       enableResizing={!instance.isMaximized}
       bounds="parent"
-      className={`shadow-2xl transition-all duration-200 ${instance.isMaximized ? 'rounded-none' : 'rounded-lg'}`}
+      className={`window-frame shadow-2xl transition-all duration-200 ${instance.isMaximized ? 'rounded-none' : 'rounded-lg'}`}
     >
       <div className={`w-full h-full flex flex-col bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden ring-1 ring-black/20 transition-all duration-200 ${instance.isMaximized ? 'rounded-none' : ''}`}>
         <header 
