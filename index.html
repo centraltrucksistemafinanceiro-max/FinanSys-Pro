@@ -41,6 +41,19 @@
         background-color: #94a3b8; /* slate-400 */
       }
       
+      .animate-pulse-fast {
+        animation: pulse-fast 1.5s ease-in-out;
+      }
+
+      @keyframes pulse-fast {
+          0%, 100% {
+              background-color: transparent;
+          }
+          50% {
+              background-color: rgba(96, 165, 250, 0.2); /* blue-400 with opacity */
+          }
+      }
+
       @media print {
         @page {
             margin: 5mm;

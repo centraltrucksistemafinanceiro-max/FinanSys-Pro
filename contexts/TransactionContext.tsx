@@ -1,5 +1,4 @@
 
-
 import React, { createContext, ReactNode, useContext } from 'react';
 import { Transaction, TransactionType } from '../types';
 import { WindowManagerContext, WindowManagerContextProps } from './WindowManagerContext';
@@ -9,7 +8,7 @@ import pb from '../services/pocketbase';
 
 export interface TransactionContextProps {
   queryTransactions: (params: { companyId: string, filters?: any }) => Promise<Transaction[]>;
-  addTransaction: (transaction: Omit<Transaction, 'id' | 'companyId'>) => Promise<void>;
+  addTransaction: (transaction: Omit<Transaction, 'id' | 'companyId'>) => Promise<Transaction | null>;
   addMultipleTransactions: (transactions: Omit<Transaction, 'id' | 'companyId'>[]) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   updateTransaction: (id: string, updates: Partial<Omit<Transaction, 'id' | 'companyId'>>) => Promise<void>;
@@ -47,11 +46,6 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
     if (filters.description) {
         filterQuery += ` && description ~ "${filters.description}"`;
     }
-    
-    // We need to handle category filtering. 
-    // If category filter is a Name, we might need to fetch the ID or filter post-fetch if using expand.
-    // For simplicity/performance, fetching all for date range and filtering category client side might be okay,
-    // OR we filter by category ID if provided. Assuming filter is Name here:
     
     try {
         const records = await pb.collection('transactions').getFullList({
@@ -96,17 +90,19 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
       }
   }
 
-  const addTransaction = async (transaction: Omit<Transaction, 'id' | 'companyId'>) => {
-    if (!companyContext || !auth?.currentUser) return;
+  const addTransaction = async (transaction: Omit<Transaction, 'id' | 'companyId'>): Promise<Transaction | null> => {
+    if (!companyContext || !auth?.currentUser) return null;
     
     try {
         const categoryId = await getCategoryIdByName(transaction.category, companyContext.currentCompany.id);
         
-        await pb.collection('transactions').create({
+        const record = await pb.collection('transactions').create({
             ...transaction,
-            category: categoryId, // Send ID relation
+            category: categoryId,
             company: companyContext.currentCompany.id,
             owner: auth.currentUser.id
+        }, {
+            expand: 'category'
         });
 
         winManager?.addNotification({
@@ -115,16 +111,17 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
             message: 'Transação adicionada com sucesso.',
             type: 'success'
         });
+        return mapRecordToTransaction(record);
     } catch (err: any) {
         console.error(err);
         winManager?.addNotification({ title: 'Erro', message: 'Erro ao salvar transação.', type: 'error' });
+        return null;
     }
   };
   
   const addMultipleTransactions = async (newTransactions: Omit<Transaction, 'id' | 'companyId'>[]) => {
       if (!companyContext || !auth?.currentUser) return;
       
-      // Serial execution to avoid overwhelming connection or complex batching logic (PB doesn't have standard bulk insert API yet)
       for (const t of newTransactions) {
           const categoryId = await getCategoryIdByName(t.category, companyContext.currentCompany.id);
           await pb.collection('transactions').create({

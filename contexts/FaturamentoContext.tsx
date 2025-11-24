@@ -1,5 +1,4 @@
 
-
 import React, { createContext, ReactNode, useContext } from 'react';
 import { Faturamento } from '../types';
 import { WindowManagerContext, WindowManagerContextProps } from './WindowManagerContext';
@@ -9,7 +8,7 @@ import pb from '../services/pocketbase';
 
 export interface FaturamentoContextProps {
   queryFaturamentos: (params: { companyId: string, filters?: any }) => Promise<Faturamento[]>;
-  addFaturamento: (faturamento: Omit<Faturamento, 'id' | 'companyId'>) => Promise<void>;
+  addFaturamento: (faturamento: Omit<Faturamento, 'id' | 'companyId'>) => Promise<Faturamento | null>;
   addMultipleFaturamentos: (faturamentos: Omit<Faturamento, 'id' | 'companyId'>[]) => Promise<void>;
   deleteFaturamento: (id: string) => Promise<void>;
   updateFaturamento: (id: string, updates: Partial<Omit<Faturamento, 'id' | 'companyId'>>) => Promise<void>;
@@ -66,10 +65,10 @@ export const FaturamentoProvider: React.FC<{ children: ReactNode }> = ({ childre
     return faturamentos.reduce((acc, f) => acc + (Number(f.valor) || 0), 0);
   };
 
-  const addFaturamento = async (faturamento: Omit<Faturamento, 'id' | 'companyId'>) => {
-    if (!companyContext || !auth?.currentUser) return;
+  const addFaturamento = async (faturamento: Omit<Faturamento, 'id' | 'companyId'>): Promise<Faturamento | null> => {
+    if (!companyContext || !auth?.currentUser) return null;
     try {
-        await pb.collection('faturamentos').create({
+        const record = await pb.collection('faturamentos').create({
             ...faturamento,
             company: companyContext.currentCompany.id,
             owner: auth.currentUser.id
@@ -79,8 +78,10 @@ export const FaturamentoProvider: React.FC<{ children: ReactNode }> = ({ childre
             message: 'Faturamento adicionado com sucesso.',
             type: 'success'
         });
+        return mapRecordToFaturamento(record);
     } catch (e) {
         winManager?.addNotification({ title: 'Erro', message: 'Falha ao salvar.', type: 'error' });
+        return null;
     }
   };
 

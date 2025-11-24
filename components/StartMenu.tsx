@@ -5,6 +5,7 @@ import { SettingsContext } from '../contexts/SettingsContext';
 import { AppDefinition } from '../types';
 import { AuthContext } from '../contexts/AuthContext';
 import { LogoutIcon } from './icons/AppIcons';
+import Logo from './Logo';
 
 interface StartMenuProps {
   closeMenu: () => void;
@@ -65,7 +66,7 @@ const StartMenu: React.FC<StartMenuProps> = ({ closeMenu }) => {
       style={{maxHeight: 'calc(100vh - 5rem)'}}
     >
       <div className="flex items-center pb-4 mb-4 border-b border-slate-400/50 flex-shrink-0">
-        <img src="https://lh3.googleusercontent.com/d/10eVKUmKef7BQNeJHl8Cz1gJbX8UBSCVd" alt="Logo" className="w-12 h-12" />
+        <Logo className="w-12 h-12" />
         <div className="ml-4">
           <h3 className="font-semibold text-lg">{auth.currentUser?.username}</h3>
           <p className="text-sm opacity-70">Fluxo de Caixa FinanSys Pro</p>

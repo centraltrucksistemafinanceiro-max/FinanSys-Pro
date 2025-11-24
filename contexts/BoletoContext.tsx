@@ -8,7 +8,7 @@ import pb from '../services/pocketbase';
 
 export interface BoletoContextProps {
   queryBoletos: (params: { companyId: string, filters?: any }) => Promise<Boleto[]>;
-  addBoleto: (boleto: Omit<Boleto, 'id' | 'status' | 'paymentDate' | 'companyId'>) => Promise<void>;
+  addBoleto: (boleto: Omit<Boleto, 'id' | 'status' | 'paymentDate' | 'companyId'>) => Promise<Boleto | null>;
   addMultipleBoletos: (boletos: (Omit<Boleto, 'id' | 'companyId' | 'status' | 'paymentDate'> & { status?: BoletoStatus; paymentDate?: string })[]) => Promise<void>;
   deleteBoleto: (id: string) => Promise<boolean>;
   updateBoleto: (id: string, updates: Partial<Omit<Boleto, 'id' | 'companyId'>>) => Promise<void>;
@@ -98,17 +98,19 @@ export const BoletoProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       }
   }
 
-  const addBoleto = async (boleto: Omit<Boleto, 'id' | 'status' | 'paymentDate' | 'companyId'>) => {
-    if (!companyContext || !auth?.currentUser) return;
+  const addBoleto = async (boleto: Omit<Boleto, 'id' | 'status' | 'paymentDate' | 'companyId'>): Promise<Boleto | null> => {
+    if (!companyContext || !auth?.currentUser) return null;
 
     try {
         const categoryId = await getCategoryIdByName(boleto.category, companyContext.currentCompany.id);
-        await pb.collection('boletos').create({
+        const record = await pb.collection('boletos').create({
             ...boleto,
             category: categoryId,
             status: BoletoStatus.OPEN,
             company: companyContext.currentCompany.id,
             owner: auth.currentUser.id
+        }, {
+            expand: 'category'
         });
         winManager?.addNotification({
             id: `add-boleto-${Date.now()}`,
@@ -116,9 +118,11 @@ export const BoletoProvider: React.FC<{ children: ReactNode }> = ({ children }) 
             message: 'Boleto adicionado com sucesso.',
             type: 'success'
         });
+        return mapRecordToBoleto(record);
     } catch (e) {
         console.error(e);
         winManager?.addNotification({ title: 'Erro', message: 'Falha ao adicionar boleto.', type: 'error' });
+        return null;
     }
   };
   

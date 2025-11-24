@@ -1,5 +1,4 @@
 
-
 import React, { createContext, ReactNode, useContext } from 'react';
 import { FaturamentoSemNota, FaturamentoSemNotaCategoria } from '../types';
 import { WindowManagerContext, WindowManagerContextProps } from './WindowManagerContext';
@@ -9,7 +8,7 @@ import pb from '../services/pocketbase';
 
 export interface FaturamentoSemNotaContextProps {
   queryFaturamentos: (params: { companyId: string, filters?: any }) => Promise<FaturamentoSemNota[]>;
-  addFaturamento: (faturamento: Omit<FaturamentoSemNota, 'id' | 'valor' | 'companyId'> & { valor: number | string }) => Promise<void>;
+  addFaturamento: (faturamento: Omit<FaturamentoSemNota, 'id' | 'valor' | 'companyId'> & { valor: number | string }) => Promise<FaturamentoSemNota | null>;
   addMultipleFaturamentos: (faturamentos: (Omit<FaturamentoSemNota, 'id' | 'valor' | 'companyId'> & { valor: number | string })[]) => Promise<void>;
   deleteFaturamento: (id: string) => Promise<void>;
   updateFaturamento: (id: string, updates: Partial<Omit<FaturamentoSemNota, 'id' | 'valor' | 'companyId'> & { valor: number | string }>) => Promise<void>;
@@ -89,12 +88,12 @@ export const FaturamentoSemNotaProvider: React.FC<{ children: ReactNode }> = ({ 
       return { ...data, valor: valorFinal };
   }
 
-  const addFaturamento = async (faturamentoData: Omit<FaturamentoSemNota, 'id' | 'valor' | 'companyId'> & { valor: number | string }) => {
-    if (!companyContext || !auth?.currentUser) return;
+  const addFaturamento = async (faturamentoData: Omit<FaturamentoSemNota, 'id' | 'valor' | 'companyId'> & { valor: number | string }): Promise<FaturamentoSemNota | null> => {
+    if (!companyContext || !auth?.currentUser) return null;
     const processedData = processFaturamentoData(faturamentoData);
     
     try {
-        await pb.collection('faturamentos_sem_nota').create({
+        const record = await pb.collection('faturamentos_sem_nota').create({
             ...processedData,
             company: companyContext.currentCompany.id,
             owner: auth.currentUser.id
@@ -104,8 +103,10 @@ export const FaturamentoSemNotaProvider: React.FC<{ children: ReactNode }> = ({ 
             message: 'Lançamento adicionado com sucesso.',
             type: 'success'
         });
+        return mapRecordToFaturamento(record);
     } catch (e) {
         winManager?.addNotification({ title: 'Erro', message: 'Falha ao salvar.', type: 'error' });
+        return null;
     }
   };
   

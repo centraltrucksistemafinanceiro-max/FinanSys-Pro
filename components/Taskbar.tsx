@@ -7,7 +7,20 @@ import { APPS } from '../windows/apps';
 import { SettingsContext } from '../contexts/SettingsContext';
 import { CompanyContext } from '../contexts/CompanyContext';
 import { BriefcaseIcon, ChevronDownIcon, PlusIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/solid';
+import Logo from './Logo';
 
+const ClockDisplay = React.memo(() => {
+  const clock = useClock();
+  const time = clock.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const date = clock.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  return (
+    <div className="text-right text-xs px-2 py-1 rounded-md hover:bg-slate-400/30 transition-colors">
+      <div>{time}</div>
+      <div className="hidden sm:block">{date}</div>
+    </div>
+  );
+});
 
 const Taskbar: React.FC = () => {
   const [isStartMenuOpen, setStartMenuOpen] = useState(false);
@@ -17,15 +30,11 @@ const Taskbar: React.FC = () => {
   const [isCreatingCompany, setIsCreatingCompany] = useState(false);
   const [newCompanyName, setNewCompanyName] = useState('');
 
-  const clock = useClock();
   const windowManager = useContext(WindowManagerContext);
   const settings = useContext(SettingsContext);
   const companyContext = useContext(CompanyContext);
   const startMenuRef = useRef<HTMLDivElement>(null);
   const companySwitcherRef = useRef<HTMLDivElement>(null);
-
-  const time = clock.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const date = clock.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -89,7 +98,7 @@ const Taskbar: React.FC = () => {
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = settings.accentColor + '50'}
             onMouseLeave={(e) => { if (!isStartMenuOpen) e.currentTarget.style.backgroundColor = ''}}
           >
-            <img src="https://lh3.googleusercontent.com/d/10eVKUmKef7BQNeJHl8Cz1gJbX8UBSCVd" alt="Start Menu" className="w-8 h-8" />
+            <Logo className="w-8 h-8" />
           </button>
           {isStartMenuOpen && <StartMenu closeMenu={() => setStartMenuOpen(false)} />}
         </div>
@@ -188,10 +197,7 @@ const Taskbar: React.FC = () => {
         </div>
       </div>
 
-      <div className="text-right text-xs px-2 py-1 rounded-md hover:bg-slate-400/30 transition-colors">
-        <div>{time}</div>
-        <div className="hidden sm:block">{date}</div>
-      </div>
+      <ClockDisplay />
     </div>
   );
 };

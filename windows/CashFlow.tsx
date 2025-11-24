@@ -44,6 +44,7 @@ const CashFlow: React.FC = () => {
   const [items, setItems] = useState<Transaction[]>([]);
   const [filteredBalance, setFilteredBalance] = useState(0);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [newlyAddedId, setNewlyAddedId] = useState<string | null>(null);
   
   // Modal state
   const [confirmationModal, setConfirmationModal] = useState<{
@@ -129,10 +130,12 @@ const CashFlow: React.FC = () => {
       ));
       await updateTransaction(editingTransactionId!, transactionData);
     } else {
-      await addTransaction(transactionData);
-      // Refresh list for Add to get real ID
-      const allItems = await queryTransactions({ companyId: companyContext.currentCompany.id, filters });
-      setItems(allItems);
+      const newTransaction = await addTransaction(transactionData);
+      if (newTransaction) {
+        setItems(prev => [newTransaction, ...prev]);
+        setNewlyAddedId(newTransaction.id);
+        setTimeout(() => setNewlyAddedId(null), 2000);
+      }
     }
 
     setEditingTransactionId(null);
@@ -331,7 +334,7 @@ const CashFlow: React.FC = () => {
                   {isLoading ? (
                       <tr><td colSpan={6} className="text-center p-10 text-slate-500">Carregando...</td></tr>
                   ) : currentItems.map((t: Transaction) => (
-                      <tr key={t.id} onDoubleClick={() => handleEdit(t)} className="border-b border-slate-700 hover:bg-slate-700/50 cursor-pointer">
+                      <tr key={t.id} onDoubleClick={() => handleEdit(t)} className={`border-b border-slate-700 hover:bg-slate-700/50 cursor-pointer transition-colors duration-300 ${t.id === newlyAddedId ? 'animate-pulse-fast' : ''}`}>
                           <td className="px-6 py-4">{formatDateForDisplay(t.date)}</td>
                           <td className="px-6 py-4 font-medium uppercase text-slate-200">{t.description}</td>
                           <td className="px-6 py-4">{t.category}</td>
