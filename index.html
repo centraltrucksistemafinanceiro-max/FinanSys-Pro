@@ -42,88 +42,141 @@
       }
       
       @media print {
-        /* 1. Reset Page & Body to White Paper Standard */
-        html, body, #root {
-            height: auto !important;
-            width: 100% !important;
-            overflow: visible !important;
-            position: static !important;
-            background-color: white !important;
-            margin: 0 !important;
-            padding: 0 !important;
+        @page {
+            margin: 10mm; /* Standard print margin */
+            size: auto;
         }
 
-        /* 2. Hide everything by default */
+        html, body {
+            background-color: white !important;
+            height: auto !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+        }
+
+        /* Reset layout context to prevent huge margins/borders from window positioning */
+        #root, .App, .Desktop, div[class*="react-draggable"] {
+            position: static !important;
+            transform: none !important;
+            width: 100% !important;
+            height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            display: block !important;
+        }
+
+        /* Hide everything by default using visibility to preserve some logic if needed, 
+           but collapse height to avoid empty pages */
         body * {
             visibility: hidden;
         }
 
-        /* 3. Permanently hide UI elements */
-        .taskbar, header, .window-controls, .no-print {
+        /* Hide UI elements completely */
+        .taskbar, header, .window-controls, .no-print, button {
             display: none !important;
         }
 
-        /* 4. Target the specific content to print */
-        .printable-dashboard {
+        /* Target the dashboard content */
+        .printable-dashboard, 
+        .printable-dashboard * {
             visibility: visible !important;
+        }
+
+        .printable-dashboard {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
+            max-width: 100% !important;
             height: auto !important;
             margin: 0 !important;
-            padding: 20px !important;
+            padding: 0 !important;
             background-color: white !important;
             color: black !important;
-            z-index: 9999 !important;
-            overflow: visible !important;
+            overflow: visible !important; /* Allow content to expand to multiple pages */
+            z-index: 99999 !important;
         }
 
-        /* 5. Reset Children Styles for Ink Saving */
-        .printable-dashboard * {
-            visibility: visible !important;
-            background-color: transparent !important; /* Removes dark card backgrounds */
-            color: black !important; /* Forces black text for readability */
+        /* Reset container styles for print readability */
+        .printable-dashboard .bg-slate-900, 
+        .printable-dashboard .bg-slate-800, 
+        .printable-dashboard .bg-slate-100 {
+            background-color: white !important;
+            color: black !important;
+            border: none !important;
             box-shadow: none !important;
-            text-shadow: none !important;
-            border-color: #ccc !important;
-            overflow: visible !important; /* Expands scrollable areas to full height */
-        }
-        
-        /* 6. Preserve Financial Color Meaning (Red/Green) overrides */
-        .printable-dashboard .text-red-500, 
-        .printable-dashboard .text-red-600, 
-        .printable-dashboard .text-red-400 { 
-            color: #b91c1c !important; /* Dark Red for Print */
-        }
-        .printable-dashboard .text-green-500, 
-        .printable-dashboard .text-green-600, 
-        .printable-dashboard .text-emerald-500, 
-        .printable-dashboard .text-emerald-600 { 
-            color: #15803d !important; /* Dark Green for Print */
-        }
-        .printable-dashboard .text-blue-500, 
-        .printable-dashboard .text-blue-600 { 
-            color: #1d4ed8 !important; /* Dark Blue */
         }
 
-        /* 7. Restore Table Borders for structure */
-        .printable-dashboard table, 
-        .printable-dashboard th, 
-        .printable-dashboard td, 
-        .printable-dashboard tr {
-            border: 1px solid #cbd5e1 !important; /* Light Gray Border */
+        /* Add borders to cards for separation since background is gone */
+        .printable-dashboard .rounded-lg {
+            border: 1px solid #ddd !important;
+            border-radius: 4px !important;
+            margin-bottom: 15px !important;
+        }
+
+        /* Fix text colors */
+        .printable-dashboard .text-slate-200, 
+        .printable-dashboard .text-slate-300, 
+        .printable-dashboard .text-slate-400,
+        .printable-dashboard .text-white {
+            color: black !important;
+        }
+
+        /* Fix Grid Layouts: Stack them vertically to prevent horizontal clipping */
+        .printable-dashboard .grid {
+            display: block !important;
+        }
+        .printable-dashboard .grid > * {
+            width: 100% !important;
+            margin-bottom: 20px !important;
+            page-break-inside: avoid !important;
+        }
+
+        /* Charts: Ensure fixed height so they don't collapse or expand infinitely */
+        .recharts-responsive-container {
+            height: 300px !important;
+            width: 100% !important;
+        }
+
+        /* Tables: Improve legibility */
+        table {
+            width: 100% !important;
             border-collapse: collapse !important;
+            page-break-inside: auto;
         }
-        
-        /* 8. Chart Fixes */
-        .recharts-text {
-            fill: black !important;
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
         }
+        th, td {
+            border: 1px solid #ccc !important;
+            padding: 6px !important;
+            color: black !important;
+        }
+        thead {
+            display: table-header-group;
+        }
+        tfoot {
+            display: table-footer-group;
+        }
+
+        /* Preserve Semantic Colors (Red/Green) but make them print-friendly */
+        .text-red-500, .text-red-600, .text-red-400 { color: #b91c1c !important; font-weight: bold !important; }
+        .text-green-500, .text-green-600, .text-emerald-500, .text-emerald-600 { color: #15803d !important; font-weight: bold !important; }
+        .text-blue-500, .text-blue-600 { color: #1d4ed8 !important; }
         
-        /* 9. Remove Sticky Headers to prevent overlap issues on page break */
-        .sticky {
-            position: static !important;
+        /* Input fields */
+        input, select {
+            border: none !important;
+            background: transparent !important;
+            color: black !important;
+            appearance: none;
+            padding: 0 !important;
+            margin: 0 !important;
+            font-weight: bold;
         }
       }
     </style>
