@@ -85,6 +85,7 @@ const BoletoControl: React.FC = () => {
   const [batchData, setBatchData] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' }>({ key: 'date', direction: 'descending' });
+  const [isPrinting, setIsPrinting] = useState(false);
   
   const isEditing = editingBoletoId !== null;
 
@@ -407,16 +408,30 @@ const BoletoControl: React.FC = () => {
 
   const totalPages = Math.ceil(sortedBoletos.length / itemsPerPage);
   const currentItems = useMemo(() => {
+      if (isPrinting) return sortedBoletos;
       const indexOfLastItem = currentPage * itemsPerPage;
       const indexOfFirstItem = indexOfLastItem - itemsPerPage;
       return sortedBoletos.slice(indexOfFirstItem, indexOfLastItem);
-  }, [sortedBoletos, currentPage]);
+  }, [sortedBoletos, currentPage, isPrinting]);
   
   const handleNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
   const handlePrevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
   const startItemIndex = (currentPage - 1) * itemsPerPage + 1;
   const endItemIndex = Math.min(currentPage * itemsPerPage, sortedBoletos.length);
   const getSortIndicator = (key: string) => sortConfig.key === key ? <span className="ml-1 select-none">{sortConfig.direction === 'ascending' ? '▲' : '▼'}</span> : null;
+
+  const handlePrint = () => {
+      setIsPrinting(true);
+      setTimeout(() => {
+          window.print();
+      }, 100);
+  };
+
+  useEffect(() => {
+      const handleAfterPrint = () => setIsPrinting(false);
+      window.addEventListener('afterprint', handleAfterPrint);
+      return () => window.removeEventListener('afterprint', handleAfterPrint);
+  }, []);
 
   return (
     <div className="flex flex-col h-full bg-slate-900 text-slate-300 p-4 gap-4 printable-dashboard relative">
@@ -518,7 +533,7 @@ const BoletoControl: React.FC = () => {
                  <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total s/ Nota</span><p className="text-xl font-bold text-amber-400">{formatCurrency(totalSemNota)}</p></div>
                 <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total Geral Filtrado</span><p className="text-2xl font-bold" style={{color: settings.accentColor}}>{formatCurrency(totalFiltrado)}</p></div>
                 <div className="flex items-center gap-2 no-print">
-                    <button type="button" onClick={() => window.print()} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title="Imprimir"><PrinterIcon className="w-5 h-5" /></button>
+                    <button type="button" onClick={handlePrint} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title="Imprimir"><PrinterIcon className="w-5 h-5" /></button>
                     <button type="button" onClick={() => exportToXLSX(dataForExport, 'contas_a_pagar.xlsx')} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors"><ExportIcon className="w-5 h-5 mr-2" />Exportar XLSX</button>
                 </div>
             </div>

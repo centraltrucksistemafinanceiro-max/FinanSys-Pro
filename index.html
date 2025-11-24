@@ -75,7 +75,7 @@
         }
 
         /* Hide UI elements completely */
-        .taskbar, header, .window-controls, .no-print, button {
+        .taskbar, header, .window-controls, .no-print, button, .pagination-controls {
             display: none !important;
         }
 
@@ -92,6 +92,7 @@
             width: 100% !important;
             max-width: 100% !important;
             height: auto !important;
+            min-height: auto !important;
             margin: 0 !important;
             padding: 0 !important;
             background-color: white !important;
@@ -103,7 +104,8 @@
         /* Reset container styles for print readability */
         .printable-dashboard .bg-slate-900, 
         .printable-dashboard .bg-slate-800, 
-        .printable-dashboard .bg-slate-100 {
+        .printable-dashboard .bg-slate-100,
+        .printable-dashboard .bg-slate-700 {
             background-color: white !important;
             color: black !important;
             border: none !important;
@@ -141,26 +143,38 @@
             width: 100% !important;
         }
 
-        /* Tables: Improve legibility */
+        /* Tables: Improve legibility and multi-page support */
         table {
             width: 100% !important;
             border-collapse: collapse !important;
-            page-break-inside: auto;
+            font-size: 10pt !important;
         }
-        tr {
-            page-break-inside: avoid;
-            page-break-after: auto;
-        }
-        th, td {
-            border: 1px solid #ccc !important;
-            padding: 6px !important;
-            color: black !important;
-        }
+        
+        /* Repeat table header on new pages */
         thead {
-            display: table-header-group;
+            display: table-header-group !important;
         }
+        
+        /* Do not break rows */
+        tr {
+            page-break-inside: avoid !important;
+            page-break-after: auto !important;
+        }
+        
+        th, td {
+            border: 1px solid #000 !important;
+            padding: 4px !important;
+            color: black !important;
+            background-color: transparent !important;
+        }
+        
+        /* Remove sticky headers for print as they cause overlay issues */
+        .sticky {
+            position: static !important;
+        }
+
         tfoot {
-            display: table-footer-group;
+            display: table-footer-group !important;
         }
 
         /* Preserve Semantic Colors (Red/Green) but make them print-friendly */
