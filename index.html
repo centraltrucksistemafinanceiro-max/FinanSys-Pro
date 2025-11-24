@@ -57,7 +57,7 @@
         }
 
         /* Reset layout context to prevent huge margins/borders from window positioning */
-        #root, .App, .Desktop, div[class*="react-draggable"] {
+        #root, .App, .Desktop, div[class*="react-draggable"], div[class*="react-rnd"] {
             position: static !important;
             transform: none !important;
             width: 100% !important;
@@ -105,7 +105,8 @@
         .printable-dashboard .bg-slate-900, 
         .printable-dashboard .bg-slate-800, 
         .printable-dashboard .bg-slate-100,
-        .printable-dashboard .bg-slate-700 {
+        .printable-dashboard .bg-slate-700,
+        .printable-dashboard .bg-slate-200 {
             background-color: white !important;
             color: black !important;
             border: none !important;
@@ -141,6 +142,7 @@
         .recharts-responsive-container {
             height: 300px !important;
             width: 100% !important;
+            page-break-inside: avoid !important;
         }
 
         /* Tables: Improve legibility and multi-page support */
@@ -148,6 +150,7 @@
             width: 100% !important;
             border-collapse: collapse !important;
             font-size: 10pt !important;
+            margin-bottom: 20px !important;
         }
         
         /* Repeat table header on new pages */
@@ -162,10 +165,16 @@
         }
         
         th, td {
-            border: 1px solid #000 !important;
-            padding: 4px !important;
+            border: 1px solid #ccc !important;
+            padding: 6px 4px !important;
             color: black !important;
             background-color: transparent !important;
+            text-align: left !important;
+        }
+
+        th {
+            background-color: #f3f4f6 !important; /* Light gray for header */
+            font-weight: bold !important;
         }
         
         /* Remove sticky headers for print as they cause overlay issues */

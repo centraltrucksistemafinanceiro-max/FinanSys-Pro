@@ -199,7 +199,6 @@ const CashFlow: React.FC = () => {
       setIsPrinting(true);
       setTimeout(() => {
           window.print();
-          // The state reset is handled by the event listener below for better reliability
       }, 100);
   };
 
