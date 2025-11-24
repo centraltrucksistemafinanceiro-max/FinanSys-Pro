@@ -424,7 +424,7 @@ const BoletoControl: React.FC = () => {
       setIsPrinting(true);
       setTimeout(() => {
           window.print();
-      }, 100);
+      }, 500); // Increased timeout
   };
 
   useEffect(() => {

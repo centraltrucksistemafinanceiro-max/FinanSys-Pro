@@ -43,43 +43,33 @@
       
       @media print {
         @page {
-            margin: 10mm; /* Standard print margin */
+            margin: 10mm;
             size: auto;
         }
 
-        html, body {
+        /* Reset global layout constraints */
+        html, body, #root, .App {
             background-color: white !important;
             height: auto !important;
+            min-height: 100% !important;
             width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
             overflow: visible !important;
-        }
-
-        /* Reset layout context to prevent huge margins/borders from window positioning */
-        #root, .App, .Desktop, div[class*="react-draggable"], div[class*="react-rnd"] {
             position: static !important;
-            transform: none !important;
-            width: 100% !important;
-            height: auto !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            overflow: visible !important;
-            display: block !important;
         }
 
-        /* Hide everything by default using visibility to preserve some logic if needed, 
-           but collapse height to avoid empty pages */
+        /* Hide standard UI elements */
+        .taskbar, header, .window-controls, .no-print, button, .pagination-controls, .resize-handle {
+            display: none !important;
+        }
+
+        /* Default visibility hidden for everything to strip background UI */
         body * {
             visibility: hidden;
         }
 
-        /* Hide UI elements completely */
-        .taskbar, header, .window-controls, .no-print, button, .pagination-controls {
-            display: none !important;
-        }
-
-        /* Target the dashboard content */
+        /* Specific Logic for Printable Dashboard */
         .printable-dashboard, 
         .printable-dashboard * {
             visibility: visible !important;
@@ -90,22 +80,33 @@
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
-            max-width: 100% !important;
             height: auto !important;
-            min-height: auto !important;
             margin: 0 !important;
             padding: 0 !important;
             background-color: white !important;
             color: black !important;
-            overflow: visible !important; /* Allow content to expand to multiple pages */
-            z-index: 99999 !important;
+            overflow: visible !important;
+            z-index: 9999 !important;
+            display: block !important; /* Ensure it's not flex/grid constrained */
         }
 
-        /* Reset container styles for print readability */
+        /* Force all scrollable containers inside dashboard to expand */
+        .printable-dashboard .overflow-y-auto,
+        .printable-dashboard .overflow-auto,
+        .printable-dashboard .flex-grow,
+        .printable-dashboard .h-full {
+            overflow: visible !important;
+            height: auto !important;
+            max-height: none !important;
+            flex: none !important;
+            display: block !important;
+        }
+
+        /* Reset colors for print */
         .printable-dashboard .bg-slate-900, 
         .printable-dashboard .bg-slate-800, 
-        .printable-dashboard .bg-slate-100,
         .printable-dashboard .bg-slate-700,
+        .printable-dashboard .bg-slate-100,
         .printable-dashboard .bg-slate-200 {
             background-color: white !important;
             color: black !important;
@@ -113,14 +114,16 @@
             box-shadow: none !important;
         }
 
-        /* Add borders to cards for separation since background is gone */
-        .printable-dashboard .rounded-lg {
+        /* Add borders for separation since backgrounds are gone */
+        .printable-dashboard .rounded-lg, 
+        .printable-dashboard .shadow-lg {
             border: 1px solid #ddd !important;
-            border-radius: 4px !important;
-            margin-bottom: 15px !important;
+            border-radius: 0 !important; /* Sharp corners for print */
+            box-shadow: none !important;
+            margin-bottom: 10px !important;
         }
 
-        /* Fix text colors */
+        /* Text Colors */
         .printable-dashboard .text-slate-200, 
         .printable-dashboard .text-slate-300, 
         .printable-dashboard .text-slate-400,
@@ -128,78 +131,63 @@
             color: black !important;
         }
 
-        /* Fix Grid Layouts: Stack them vertically to prevent horizontal clipping */
-        .printable-dashboard .grid {
-            display: block !important;
-        }
-        .printable-dashboard .grid > * {
-            width: 100% !important;
-            margin-bottom: 20px !important;
-            page-break-inside: avoid !important;
-        }
-
-        /* Charts: Ensure fixed height so they don't collapse or expand infinitely */
-        .recharts-responsive-container {
-            height: 300px !important;
-            width: 100% !important;
-            page-break-inside: avoid !important;
-        }
-
-        /* Tables: Improve legibility and multi-page support */
+        /* Table Optimizations */
         table {
             width: 100% !important;
             border-collapse: collapse !important;
-            font-size: 10pt !important;
-            margin-bottom: 20px !important;
+            font-size: 9pt !important;
+            margin-bottom: 10px !important;
+            table-layout: auto !important;
         }
         
-        /* Repeat table header on new pages */
         thead {
             display: table-header-group !important;
         }
         
-        /* Do not break rows */
+        tbody {
+            display: table-row-group !important;
+        }
+
         tr {
             page-break-inside: avoid !important;
             page-break-after: auto !important;
         }
         
         th, td {
-            border: 1px solid #ccc !important;
-            padding: 6px 4px !important;
+            border: 1px solid #000 !important; /* Darker border for print */
+            padding: 4px !important;
             color: black !important;
-            background-color: transparent !important;
+            background: transparent !important;
             text-align: left !important;
+            vertical-align: top !important;
         }
 
         th {
-            background-color: #f3f4f6 !important; /* Light gray for header */
+            background-color: #f0f0f0 !important;
             font-weight: bold !important;
         }
-        
-        /* Remove sticky headers for print as they cause overlay issues */
+
+        /* Remove Sticky Headers in Print */
         .sticky {
             position: static !important;
         }
 
-        tfoot {
-            display: table-footer-group !important;
-        }
-
-        /* Preserve Semantic Colors (Red/Green) but make them print-friendly */
-        .text-red-500, .text-red-600, .text-red-400 { color: #b91c1c !important; font-weight: bold !important; }
-        .text-green-500, .text-green-600, .text-emerald-500, .text-emerald-600 { color: #15803d !important; font-weight: bold !important; }
-        .text-blue-500, .text-blue-600 { color: #1d4ed8 !important; }
-        
-        /* Input fields */
-        input, select {
+        /* Hide Input borders to look like text */
+        input, select, textarea {
             border: none !important;
             background: transparent !important;
-            color: black !important;
-            appearance: none;
             padding: 0 !important;
             margin: 0 !important;
-            font-weight: bold;
+            resize: none !important;
+            color: black !important;
+        }
+
+        /* Chart Containers */
+        .recharts-responsive-container {
+            height: 300px !important;
+            width: 100% !important;
+            page-break-inside: avoid !important;
+            border: 1px solid #eee;
         }
       }
     </style>
