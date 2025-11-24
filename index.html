@@ -42,35 +42,30 @@
       }
       
       @media print {
-        /* 1. Reset Page & Body constraints */
+        /* 1. Reset Page & Body to White Paper Standard */
         html, body, #root {
             height: auto !important;
             width: 100% !important;
             overflow: visible !important;
             position: static !important;
-            background: #fff !important;
+            background-color: white !important;
             margin: 0 !important;
             padding: 0 !important;
         }
 
-        /* 2. Hide everything by default using visibility. 
-           This prevents layout shifts but hides content. */
+        /* 2. Hide everything by default */
         body * {
             visibility: hidden;
         }
 
-        /* 3. Hide UI elements completely that distort layout */
+        /* 3. Permanently hide UI elements */
         .taskbar, header, .window-controls, .no-print {
             display: none !important;
         }
 
         /* 4. Target the specific content to print */
-        .printable-dashboard, .printable-dashboard * {
-            visibility: visible !important;
-        }
-
-        /* 5. Position the content at the absolute top-left of the paper */
         .printable-dashboard {
+            visibility: visible !important;
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
@@ -78,38 +73,57 @@
             height: auto !important;
             margin: 0 !important;
             padding: 20px !important;
-            background: white !important;
+            background-color: white !important;
             color: black !important;
             z-index: 9999 !important;
             overflow: visible !important;
+        }
+
+        /* 5. Reset Children Styles for Ink Saving */
+        .printable-dashboard * {
+            visibility: visible !important;
+            background-color: transparent !important; /* Removes dark card backgrounds */
+            color: black !important; /* Forces black text for readability */
             box-shadow: none !important;
-            border: none !important;
-        }
-
-        /* 6. Force Colors for Printing */
-        .printable-dashboard *, .recharts-text, .recharts-legend-item-text, h1, h2, h3, h4, p, span, div, td, th {
-            color: #000 !important;
-            fill: #000 !important; /* For charts */
             text-shadow: none !important;
-        }
-        
-        /* Color corrections for amounts */
-        .text-green-400, .text-emerald-500, .text-emerald-600 { color: #166534 !important; } /* Darker Green */
-        .text-red-400, .text-red-500, .text-red-600 { color: #991b1b !important; } /* Darker Red */
-        .text-blue-400, .text-blue-500, .text-blue-600 { color: #1e40af !important; } 
-        .text-cyan-400, .text-cyan-500, .text-cyan-600 { color: #0e7490 !important; }
-        .text-amber-400, .text-amber-500, .text-amber-600 { color: #b45309 !important; }
-
-        .text-slate-200, .text-slate-300, .text-slate-400, .text-slate-500 { color: #000 !important; }
-
-        /* Table Borders */
-        table, th, td, tr {
             border-color: #ccc !important;
+            overflow: visible !important; /* Expands scrollable areas to full height */
         }
         
-        /* Chart lines */
-        .recharts-cartesian-grid-line line, .recharts-cartesian-axis-line line {
-            stroke: #ccc !important;
+        /* 6. Preserve Financial Color Meaning (Red/Green) overrides */
+        .printable-dashboard .text-red-500, 
+        .printable-dashboard .text-red-600, 
+        .printable-dashboard .text-red-400 { 
+            color: #b91c1c !important; /* Dark Red for Print */
+        }
+        .printable-dashboard .text-green-500, 
+        .printable-dashboard .text-green-600, 
+        .printable-dashboard .text-emerald-500, 
+        .printable-dashboard .text-emerald-600 { 
+            color: #15803d !important; /* Dark Green for Print */
+        }
+        .printable-dashboard .text-blue-500, 
+        .printable-dashboard .text-blue-600 { 
+            color: #1d4ed8 !important; /* Dark Blue */
+        }
+
+        /* 7. Restore Table Borders for structure */
+        .printable-dashboard table, 
+        .printable-dashboard th, 
+        .printable-dashboard td, 
+        .printable-dashboard tr {
+            border: 1px solid #cbd5e1 !important; /* Light Gray Border */
+            border-collapse: collapse !important;
+        }
+        
+        /* 8. Chart Fixes */
+        .recharts-text {
+            fill: black !important;
+        }
+        
+        /* 9. Remove Sticky Headers to prevent overlap issues on page break */
+        .sticky {
+            position: static !important;
         }
       }
     </style>
