@@ -43,6 +43,14 @@ const CashFlow: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<Transaction[]>([]);
   const [filteredBalance, setFilteredBalance] = useState(0);
+  
+  // Modal state
+  const [confirmationModal, setConfirmationModal] = useState<{
+      isOpen: boolean;
+      title: string;
+      message: string;
+      onConfirm: () => void;
+  } | null>(null);
     
   const isEditing = editingTransactionId !== null;
 
@@ -131,14 +139,26 @@ const CashFlow: React.FC = () => {
     dateInputRef.current?.focus();
   };
   
+  const openConfirmation = (title: string, message: string, onConfirm: () => void) => {
+      setConfirmationModal({ isOpen: true, title, message, onConfirm });
+  };
+  
   const handleDelete = async (e: React.MouseEvent, id: string) => {
       e.stopPropagation();
       e.preventDefault();
-      if(window.confirm("Tem certeza que deseja excluir este registro?")) {
-          // Optimistic Delete
-          setItems(prev => prev.filter(t => t.id !== id));
-          await deleteTransaction(id);
-      }
+      
+      openConfirmation(
+          "Excluir Transação",
+          "Tem certeza que deseja excluir este registro? O saldo será recalculado.",
+          async () => {
+              // Optimistic Delete
+              setItems(prev => prev.filter(t => t.id !== id));
+              await deleteTransaction(id);
+              // Update totals after delete
+              const totals = await getTotals({ companyId: companyContext.currentCompany.id, filters });
+              setFilteredBalance(totals.balance);
+          }
+      );
   };
 
   const handleEdit = (transaction: Transaction) => setEditingTransactionId(transaction.id);
@@ -182,7 +202,34 @@ const CashFlow: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-900 text-slate-300 p-4 gap-4 printable-dashboard">
+    <div className="flex flex-col h-full bg-slate-900 text-slate-300 p-4 gap-4 printable-dashboard relative">
+      {/* Confirmation Modal */}
+        {confirmationModal && confirmationModal.isOpen && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 animate-scale-in">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{confirmationModal.title}</h3>
+                    <p className="text-slate-600 dark:text-slate-300 mb-6">{confirmationModal.message}</p>
+                    <div className="flex justify-end gap-3">
+                        <button 
+                            type="button"
+                            onClick={() => setConfirmationModal(null)}
+                            className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button 
+                            type="button"
+                            onClick={() => { confirmationModal.onConfirm(); setConfirmationModal(null); }}
+                            className="px-4 py-2 text-white rounded transition-colors font-medium hover:opacity-90 shadow-md"
+                            style={{ backgroundColor: settings.accentColor }}
+                        >
+                            Confirmar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+
       <h1 className="hidden print:block text-2xl font-bold mb-4 text-black">Relatório de Fluxo de Caixa</h1>
       
       <div className="flex-shrink-0 bg-slate-800 p-4 rounded-lg shadow-lg no-print">

@@ -42,66 +42,72 @@
       }
       
       @media print {
-        /* Hide all direct children of the desktop container that do not contain the printable area */
-        .flex-grow > *:not(:has(.printable-dashboard)) {
-            display: none !important;
-        }
-        /* Hide the taskbar and notifications */
-        body > #root > div > .h-12, body > #root > div > .fixed {
-            display: none !important;
-        }
-
-        /* Reset the RND window to take up the full page */
-        .flex-grow > div:has(.printable-dashboard) {
-            all: unset !important;
-            width: 100% !important;
+        /* 1. Reset Page & Body constraints */
+        html, body, #root {
             height: auto !important;
-            position: static !important;
-            transform: none !important;
-            box-shadow: none !important;
-            border-radius: 0 !important;
-            border: none !important;
-            display: block !important;
-        }
-
-        /* Hide the window header and other non-printable elements */
-        header, .no-print {
-            display: none !important;
-        }
-        
-        /* Ensure content area is visible and sized correctly */
-        main, .printable-dashboard {
+            width: 100% !important;
             overflow: visible !important;
-            height: auto !important;
-            padding: 0 !important;
-            width: 100% !important;
-        }
-        
-        /* Apply print-friendly colors */
-        body, .printable-dashboard, .bg-slate-900, .bg-slate-800, .bg-slate-700, .bg-slate-700\/50, .bg-slate-100, .bg-white {
+            position: static !important;
             background: #fff !important;
-            color: #000 !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
-        .printable-dashboard *, .recharts-text, .recharts-legend-item-text, h1, h2, h3, h4, p, span, div {
+        /* 2. Hide everything by default using visibility. 
+           This prevents layout shifts but hides content. */
+        body * {
+            visibility: hidden;
+        }
+
+        /* 3. Hide UI elements completely that distort layout */
+        .taskbar, header, .window-controls, .no-print {
+            display: none !important;
+        }
+
+        /* 4. Target the specific content to print */
+        .printable-dashboard, .printable-dashboard * {
+            visibility: visible !important;
+        }
+
+        /* 5. Position the content at the absolute top-left of the paper */
+        .printable-dashboard {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            margin: 0 !important;
+            padding: 20px !important;
+            background: white !important;
+            color: black !important;
+            z-index: 9999 !important;
+            overflow: visible !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        /* 6. Force Colors for Printing */
+        .printable-dashboard *, .recharts-text, .recharts-legend-item-text, h1, h2, h3, h4, p, span, div, td, th {
             color: #000 !important;
-            fill: #000 !important;
+            fill: #000 !important; /* For charts */
             text-shadow: none !important;
         }
         
-        .text-green-400, .text-emerald-500, .text-emerald-600 { color: #166534 !important; } /* green-700 */
-        .text-red-400, .text-red-500, .text-red-600 { color: #991b1b !important; } /* red-800 */
-        .text-blue-400, .text-blue-500, .text-blue-600 { color: #1e40af !important; } /* blue-800 */
-        .text-cyan-400, .text-cyan-500, .text-cyan-600 { color: #0e7490 !important; } /* cyan-700 */
-        .text-amber-400, .text-amber-500, .text-amber-600 { color: #b45309 !important; } /* amber-700 */
+        /* Color corrections for amounts */
+        .text-green-400, .text-emerald-500, .text-emerald-600 { color: #166534 !important; } /* Darker Green */
+        .text-red-400, .text-red-500, .text-red-600 { color: #991b1b !important; } /* Darker Red */
+        .text-blue-400, .text-blue-500, .text-blue-600 { color: #1e40af !important; } 
+        .text-cyan-400, .text-cyan-500, .text-cyan-600 { color: #0e7490 !important; }
+        .text-amber-400, .text-amber-500, .text-amber-600 { color: #b45309 !important; }
 
         .text-slate-200, .text-slate-300, .text-slate-400, .text-slate-500 { color: #000 !important; }
 
-        table, th, td {
+        /* Table Borders */
+        table, th, td, tr {
             border-color: #ccc !important;
         }
         
-        /* Chart specific adjustments */
+        /* Chart lines */
         .recharts-cartesian-grid-line line, .recharts-cartesian-axis-line line {
             stroke: #ccc !important;
         }
