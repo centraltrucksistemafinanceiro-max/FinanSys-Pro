@@ -43,170 +43,146 @@
       
       @media print {
         @page {
-            margin: 10mm;
+            margin: 5mm;
             size: auto;
         }
 
-        /* Reset global layout constraints */
+        /* RESET EVERYTHING */
         html, body, #root, .App {
-            background-color: white !important;
             height: auto !important;
-            min-height: 100% !important;
+            min-height: 0 !important;
             width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
             overflow: visible !important;
-            position: static !important;
+            background: white !important;
             display: block !important;
+            position: relative !important;
         }
 
-        /* Hide standard UI elements */
-        .taskbar, header, .window-controls, .no-print, button, .pagination-controls, .resize-handle, .desktop-icons {
-            display: none !important;
-        }
-
-        /* Default visibility hidden for everything to strip background UI */
+        /* HIDE EVERYTHING BY DEFAULT */
         body * {
             visibility: hidden;
         }
 
-        /* Reset Window Frame (Rnd component) constraints */
-        /* This is crucial to allow content to break out of the transformed window box */
-        .window-frame {
-            transform: none !important;
-            position: static !important;
-            width: 100% !important;
-            height: auto !important;
-            border: none !important;
-            box-shadow: none !important;
-            overflow: visible !important;
-            display: block !important;
-            visibility: visible !important; /* Parent must be visible for child to be visible */
-            margin: 0 !important;
-            left: 0 !important;
-            top: 0 !important;
+        /* UI ELEMENTS TO HIDE COMPLETELY */
+        .taskbar, 
+        header, 
+        .window-controls, 
+        .no-print, 
+        button, 
+        .pagination-controls, 
+        .resize-handle, 
+        .desktop-icons,
+        .desktop-wallpaper,
+        .notification-container {
+            display: none !important;
         }
 
-        /* Specific Logic for Printable Dashboard */
+        /* TARGET THE WINDOW CONTENT */
         .printable-dashboard, 
         .printable-dashboard * {
             visibility: visible !important;
         }
 
-        .printable-dashboard {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
+        /* RELEASE THE WINDOW FROM ITS CAGE (React-RND reset) */
+        .window-frame {
+            transform: none !important;
+            position: static !important; /* Crucial: moves it into normal document flow */
             width: 100% !important;
             height: auto !important;
+            border: none !important;
+            box-shadow: none !important;
             margin: 0 !important;
-            padding: 0 !important;
+            left: 0 !important;
+            top: 0 !important;
+            display: block !important;
+            visibility: visible !important;
+        }
+
+        /* RESET INTERNAL SCROLL CONTAINERS */
+        /* This forces the div that usually scrolls to simply expand vertically */
+        .printable-dashboard {
+            position: static !important;
+            width: 100% !important;
+            height: auto !important;
+            overflow: visible !important;
             background-color: white !important;
             color: black !important;
-            overflow: visible !important;
-            z-index: 9999 !important;
             display: block !important;
         }
 
-        /* Force all scrollable containers inside dashboard to expand */
-        .printable-dashboard .overflow-y-auto,
-        .printable-dashboard .overflow-auto,
         .printable-dashboard .flex-grow,
-        .printable-dashboard .h-full,
-        .printable-dashboard .flex-col {
-            overflow: visible !important;
+        .printable-dashboard .overflow-auto,
+        .printable-dashboard .overflow-y-auto,
+        .printable-dashboard .h-full {
             height: auto !important;
-            max-height: none !important;
+            overflow: visible !important;
             flex: none !important;
             display: block !important;
+            max-height: none !important;
         }
 
-        /* Reset colors for print */
+        /* STYLE ADJUSTMENTS FOR PAPER */
         .printable-dashboard .bg-slate-900, 
         .printable-dashboard .bg-slate-800, 
         .printable-dashboard .bg-slate-700,
-        .printable-dashboard .bg-slate-100,
-        .printable-dashboard .bg-slate-200 {
+        .printable-dashboard .bg-slate-100 {
             background-color: white !important;
             color: black !important;
             border: none !important;
             box-shadow: none !important;
         }
 
-        /* Add borders for separation since backgrounds are gone */
-        .printable-dashboard .rounded-lg, 
-        .printable-dashboard .shadow-lg {
-            border: 1px solid #ddd !important;
-            border-radius: 0 !important; /* Sharp corners for print */
-            box-shadow: none !important;
-            margin-bottom: 10px !important;
-        }
-
-        /* Text Colors */
-        .printable-dashboard .text-slate-200, 
-        .printable-dashboard .text-slate-300, 
-        .printable-dashboard .text-slate-400,
-        .printable-dashboard .text-white {
-            color: black !important;
-        }
-
-        /* Table Optimizations */
+        /* TABLE STYLING FOR PRINT */
         table {
             width: 100% !important;
             border-collapse: collapse !important;
-            font-size: 9pt !important;
-            margin-bottom: 10px !important;
-            table-layout: auto !important;
+            font-size: 10pt !important;
+            page-break-inside: auto;
         }
         
         thead {
-            display: table-header-group !important;
+            display: table-header-group;
         }
         
-        tbody {
-            display: table-row-group !important;
-        }
-
         tr {
-            page-break-inside: avoid !important;
-            page-break-after: auto !important;
+            page-break-inside: avoid;
+            page-break-after: auto;
         }
         
         th, td {
-            border: 1px solid #000 !important; /* Darker border for print */
-            padding: 4px !important;
+            border: 1px solid #ccc !important;
+            padding: 4px 8px !important;
             color: black !important;
-            background: transparent !important;
             text-align: left !important;
-            vertical-align: top !important;
         }
 
         th {
-            background-color: #f0f0f0 !important;
+            background-color: #f3f4f6 !important; /* Light gray header */
             font-weight: bold !important;
         }
 
-        /* Remove Sticky Headers in Print */
+        /* Remove sticky headers usually found in web apps */
         .sticky {
             position: static !important;
         }
 
-        /* Hide Input borders to look like text */
-        input, select, textarea {
+        /* Clean up inputs */
+        input, select {
             border: none !important;
             background: transparent !important;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
             padding: 0 !important;
-            margin: 0 !important;
-            resize: none !important;
-            color: black !important;
         }
 
-        /* Chart Containers */
+        /* Ensure charts don't break weirdly */
         .recharts-responsive-container {
             height: 300px !important;
-            width: 100% !important;
-            page-break-inside: avoid !important;
-            border: 1px solid #eee;
+            page-break-inside: avoid;
+            margin-bottom: 20px;
         }
       }
     </style>

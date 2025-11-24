@@ -295,10 +295,6 @@ const BoletoControl: React.FC = () => {
             // Optimistic Delete
             setBoletos(prev => prev.filter(b => b.id !== id));
             
-            // This function signature in BoletoContext should ideally return boolean to confirm success
-            // Assuming deleteBoleto is void or promise based, we just await it.
-            // If it fails, we might need a way to know. 
-            // For now, we assume success if no error is thrown by the context (which handles errors with notifications).
             try {
                 await deleteBoleto(id);
                 await loadBoletos(); // Sync
@@ -424,7 +420,7 @@ const BoletoControl: React.FC = () => {
       setIsPrinting(true);
       setTimeout(() => {
           window.print();
-      }, 1000); // Increased timeout
+      }, 1000);
   };
 
   useEffect(() => {
@@ -437,7 +433,7 @@ const BoletoControl: React.FC = () => {
     <div className="flex flex-col h-full bg-slate-900 text-slate-300 p-4 gap-4 printable-dashboard relative">
         {/* Confirmation Modal */}
         {confirmationModal && confirmationModal.isOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in no-print">
                 <div className="bg-white dark:bg-slate-800 rounded-lg shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 animate-scale-in">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{confirmationModal.title}</h3>
                     <p className="text-slate-600 dark:text-slate-300 mb-6">{confirmationModal.message}</p>
@@ -533,7 +529,7 @@ const BoletoControl: React.FC = () => {
                  <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total s/ Nota</span><p className="text-xl font-bold text-amber-400">{formatCurrency(totalSemNota)}</p></div>
                 <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total Geral Filtrado</span><p className="text-2xl font-bold" style={{color: settings.accentColor}}>{formatCurrency(totalFiltrado)}</p></div>
                 <div className="flex items-center gap-2 no-print">
-                    <button type="button" onClick={handlePrint} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title="Imprimir"><PrinterIcon className="w-5 h-5" /></button>
+                    <button type="button" onClick={handlePrint} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title="Imprimir / Salvar PDF"><PrinterIcon className="w-5 h-5" /></button>
                     <button type="button" onClick={() => exportToXLSX(dataForExport, 'contas_a_pagar.xlsx')} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors"><ExportIcon className="w-5 h-5 mr-2" />Exportar XLSX</button>
                 </div>
             </div>

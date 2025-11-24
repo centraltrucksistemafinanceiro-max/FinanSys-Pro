@@ -348,7 +348,7 @@ const Faturamento: React.FC = () => {
       setIsPrinting(true);
       setTimeout(() => {
           window.print();
-      }, 1000); // Increased timeout
+      }, 1000);
   };
 
   useEffect(() => {
@@ -361,7 +361,7 @@ const Faturamento: React.FC = () => {
     <div className="flex flex-col h-full bg-slate-900 text-slate-300 p-4 gap-4 printable-dashboard relative">
       {/* Confirmation Modal */}
         {confirmationModal && confirmationModal.isOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in no-print">
                 <div className="bg-white dark:bg-slate-800 rounded-lg shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 animate-scale-in">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{confirmationModal.title}</h3>
                     <p className="text-slate-600 dark:text-slate-300 mb-6">{confirmationModal.message}</p>
@@ -448,7 +448,7 @@ const Faturamento: React.FC = () => {
           <div className="flex items-center gap-4">
             <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total Filtrado</span><p className="text-2xl font-bold text-green-400">{formatCurrency(totalFiltrado)}</p></div>
             <div className="flex items-center gap-2 no-print">
-                <button onClick={handlePrint} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title="Imprimir"><PrinterIcon className="w-5 h-5" /></button>
+                <button onClick={handlePrint} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title="Imprimir / Salvar PDF"><PrinterIcon className="w-5 h-5" /></button>
                 <button onClick={() => exportToXLSX(dataForExport, 'faturamento_com_nota.xlsx')} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors"><ExportIcon className="w-5 h-5 mr-2" />Exportar XLSX</button>
             </div>
           </div>

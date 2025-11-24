@@ -182,6 +182,7 @@ const CashFlow: React.FC = () => {
   }, [items, sortConfig]);
 
   const currentItems = useMemo(() => {
+      // If printing, return ALL sorted items to ensure the PDF contains everything
       if (isPrinting) return sortedItems;
       return sortedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   }, [sortedItems, currentPage, isPrinting]);
@@ -197,11 +198,13 @@ const CashFlow: React.FC = () => {
   
   const handlePrint = () => {
       setIsPrinting(true);
+      // Small timeout to allow React to render the full list (bypass pagination) before opening print dialog
       setTimeout(() => {
           window.print();
-      }, 1000); // Increased timeout to allow rendering of all items
+      }, 1000);
   };
 
+  // Reset printing state after dialog closes
   useEffect(() => {
       const handleAfterPrint = () => setIsPrinting(false);
       window.addEventListener('afterprint', handleAfterPrint);
@@ -220,7 +223,7 @@ const CashFlow: React.FC = () => {
     <div className="flex flex-col h-full bg-slate-900 text-slate-300 p-4 gap-4 printable-dashboard relative">
       {/* Confirmation Modal */}
         {confirmationModal && confirmationModal.isOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in no-print">
                 <div className="bg-white dark:bg-slate-800 rounded-lg shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 animate-scale-in">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{confirmationModal.title}</h3>
                     <p className="text-slate-600 dark:text-slate-300 mb-6">{confirmationModal.message}</p>
@@ -305,7 +308,7 @@ const CashFlow: React.FC = () => {
                   <p className={`text-2xl font-bold ${filteredBalance >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatCurrency(filteredBalance)}</p>
               </div>
               <div className="flex items-center gap-2 no-print">
-                <button onClick={handlePrint} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title="Imprimir"><PrinterIcon className="w-5 h-5" /></button>
+                <button onClick={handlePrint} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title="Imprimir / Salvar PDF"><PrinterIcon className="w-5 h-5" /></button>
                 <button onClick={() => exportToXLSX(dataForExport, 'fluxo_de_caixa.xlsx')} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors"><ExportIcon className="w-5 h-5 mr-2" />Exportar XLSX</button>
               </div>
           </div>
