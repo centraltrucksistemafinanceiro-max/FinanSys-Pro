@@ -1,4 +1,3 @@
-
 import React, { createContext, ReactNode, useContext } from 'react';
 import { Transaction, TransactionType } from '../types';
 import { WindowManagerContext, WindowManagerContextProps } from './WindowManagerContext';
@@ -46,6 +45,9 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
     }
     if (filters.description) {
         filterQuery += ` && description ~ "${filters.description}"`;
+    }
+    if (filters.paymentMethod) {
+        filterQuery += ` && paymentMethod = "${filters.paymentMethod}"`;
     }
     
     try {

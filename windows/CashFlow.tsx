@@ -1,4 +1,3 @@
-
 import React, { useContext, useState, useMemo, useEffect, useRef } from 'react';
 import { TransactionContext } from '../contexts/TransactionContext';
 import { CompanyContext } from '../contexts/CompanyContext';
@@ -20,7 +19,7 @@ const CashFlow: React.FC = () => {
   const dateInputRef = useRef<HTMLInputElement>(null);
     
   if (!transactionContext || !settings || !winManager || !categoryContext || !companyContext) return null;
-  const { queryTransactions, addTransaction, deleteTransaction, updateTransaction, getTotals } = transactionContext;
+  const { queryTransactions, addTransaction, deleteTransaction, updateTransaction } = transactionContext;
   const { categories } = categoryContext;
 
   const getInitialCategory = () => (categories.length > 0 ? categories[0].name : '');
@@ -38,13 +37,13 @@ const CashFlow: React.FC = () => {
   const [formState, setFormState] = useState(initialFormState);
   const [editingTransactionId, setEditingTransactionId] = useState<string | null>(null);
   
-  const [filters, setFilters] = useState({ description: '', startDate: '', endDate: '', category: '' });
+  const [filters, setFilters] = useState({ description: '', startDate: '', endDate: '', category: '', paymentMethod: '' });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' }>({ key: 'date', direction: 'descending' });
   const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<Transaction[]>([]);
-  const [filteredBalance, setFilteredBalance] = useState(0);
+  
   const [isPrinting, setIsPrinting] = useState(false);
   const [newlyAddedId, setNewlyAddedId] = useState<string | null>(null);
   
@@ -81,17 +80,23 @@ const CashFlow: React.FC = () => {
     } else {
       setFormState({ ...initialFormState, category: getInitialCategory() });
     }
-  }, [editingTransactionId]);
+  }, [editingTransactionId, items]);
 
-  // Initial Load
+  const [totalEntradas, setTotalEntradas] = useState(0);
+  const [totalSaidas, setTotalSaidas] = useState(0);
+
+  // Data loading and totals calculation
   useEffect(() => {
     const loadData = async () => {
         setIsLoading(true);
         const allItems = await queryTransactions({ companyId: companyContext.currentCompany.id, filters });
         setItems(allItems);
         
-        const totals = await getTotals({ companyId: companyContext.currentCompany.id, filters });
-        setFilteredBalance(totals.balance);
+        const entradas = allItems.filter(t => t.type === TransactionType.INCOME).reduce((sum, t) => sum + Number(t.amount), 0);
+        const saidas = allItems.filter(t => t.type === TransactionType.EXPENSE).reduce((sum, t) => sum + Number(t.amount), 0);
+        
+        setTotalEntradas(entradas);
+        setTotalSaidas(saidas);
         setIsLoading(false);
     };
     loadData();
@@ -161,9 +166,6 @@ const CashFlow: React.FC = () => {
               // Optimistic Delete
               setItems(prev => prev.filter(t => t.id !== id));
               await deleteTransaction(id);
-              // Update totals after delete
-              const totals = await getTotals({ companyId: companyContext.currentCompany.id, filters });
-              setFilteredBalance(totals.balance);
           }
       );
   };
@@ -306,18 +308,30 @@ const CashFlow: React.FC = () => {
 
       <div className="flex-shrink-0 bg-slate-800 p-3 rounded-lg shadow-lg flex flex-wrap justify-between items-center gap-4">
           <div className="flex flex-wrap items-center gap-2 no-print">
-              <input type="text" name="description" value={filters.description} onChange={handleFilterChange} placeholder="Buscar por descrição..." className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none w-64 uppercase" style={{'--tw-ring-color': accentColor} as React.CSSProperties} />
+              <input type="text" name="description" value={filters.description} onChange={handleFilterChange} placeholder="Buscar por descrição..." className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none w-48 uppercase" style={{'--tw-ring-color': accentColor} as React.CSSProperties} />
               <select name="category" value={filters.category} onChange={handleFilterChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties}>
                   <option value="">Todas as Categorias</option>
                   {categories.map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
+              </select>
+              <select name="paymentMethod" value={filters.paymentMethod} onChange={handleFilterChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties}>
+                  <option value="">Todos Tipos Pag.</option>
+                  {PAYMENT_METHODS.map(method => <option key={method} value={method}>{method}</option>)}
               </select>
               <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" />
               <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" />
           </div>
           <div className="flex items-center gap-4">
               <div className="text-right">
+                  <span className="text-xs text-slate-400 uppercase">Total Entradas</span>
+                  <p className="text-xl font-bold text-green-400">{formatCurrency(totalEntradas)}</p>
+              </div>
+              <div className="text-right">
+                  <span className="text-xs text-slate-400 uppercase">Total Saídas</span>
+                  <p className="text-xl font-bold text-red-400">{formatCurrency(totalSaidas)}</p>
+              </div>
+              <div className="text-right">
                   <span className="text-xs text-slate-400 uppercase">Saldo Filtrado</span>
-                  <p className={`text-2xl font-bold ${filteredBalance >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatCurrency(filteredBalance)}</p>
+                  <p className={`text-2xl font-bold ${(totalEntradas - totalSaidas) >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatCurrency(totalEntradas - totalSaidas)}</p>
               </div>
               <div className="flex items-center gap-2 no-print">
                 <button onClick={handlePrint} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title="Imprimir / Salvar PDF"><PrinterIcon className="w-5 h-5" /></button>
