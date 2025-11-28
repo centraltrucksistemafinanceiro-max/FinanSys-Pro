@@ -9,6 +9,7 @@ import { exportToXLSX } from '../utils/xlsxUtils';
 import { WindowManagerContext } from '../contexts/WindowManagerContext';
 import { ExportIcon, PrinterIcon } from '../components/icons/AppIcons';
 import { formatCurrency, formatDateForDisplay } from '../utils/formatters';
+import { PAYMENT_METHODS } from '../constants';
 
 const CashFlow: React.FC = () => {
   const transactionContext = useContext(TransactionContext);
@@ -30,6 +31,7 @@ const CashFlow: React.FC = () => {
     description: '',
     amount: '',
     category: getInitialCategory(),
+    paymentMethod: PAYMENT_METHODS[0],
     notes: ''
   };
 
@@ -72,6 +74,7 @@ const CashFlow: React.FC = () => {
           description: transactionToEdit.description,
           amount: String(transactionToEdit.amount),
           category: transactionToEdit.category,
+          paymentMethod: transactionToEdit.paymentMethod || PAYMENT_METHODS[0],
           notes: transactionToEdit.notes || ''
         });
       }
@@ -191,7 +194,7 @@ const CashFlow: React.FC = () => {
   }, [sortedItems, currentPage, isPrinting]);
 
   const dataForExport = useMemo(() => sortedItems.map(t => ({
-      'Data': formatDateForDisplay(t.date), 'Descrição': t.description, 'Categoria': t.category, 'Tipo': t.type, 'Valor': t.amount,
+      'Data': formatDateForDisplay(t.date), 'Descrição': t.description, 'Categoria': t.category, 'Tipo': t.type, 'Valor': t.amount, 'Tipo Pag.': t.paymentMethod
   })), [sortedItems]);
   
   const totalItems = items.length;
@@ -270,7 +273,13 @@ const CashFlow: React.FC = () => {
                           {categories.map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
                       </select>
                   </div>
-                  <div className="md:col-span-1">
+                  <div className="md:col-span-2">
+                      <label htmlFor="paymentMethod" className="block text-sm font-medium mb-1 text-slate-400">Tipo Pag.</label>
+                      <select id="paymentMethod" name="paymentMethod" value={formState.paymentMethod} onChange={handleInputChange} className="w-full p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties}>
+                          {PAYMENT_METHODS.map(method => <option key={method} value={method}>{method}</option>)}
+                      </select>
+                  </div>
+                   <div className="md:col-span-1">
                       <label htmlFor="type" className="block text-sm font-medium mb-1 text-slate-400">Tipo</label>
                       <select id="type" name="type" value={formState.type} onChange={handleInputChange} className="w-full p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties}>
                           <option value={TransactionType.EXPENSE}>SAÍDA</option>
@@ -325,6 +334,7 @@ const CashFlow: React.FC = () => {
                       <th className="px-6 py-3 cursor-pointer select-none hover:bg-slate-700/50 transition-colors" onClick={() => requestSort('date')}>Data {getSortIndicator('date')}</th>
                       <th className="px-6 py-3 cursor-pointer select-none hover:bg-slate-700/50 transition-colors" onClick={() => requestSort('description')}>Descrição {getSortIndicator('description')}</th>
                       <th className="px-6 py-3 cursor-pointer select-none hover:bg-slate-700/50 transition-colors" onClick={() => requestSort('category')}>Categoria {getSortIndicator('category')}</th>
+                      <th className="px-6 py-3 cursor-pointer select-none hover:bg-slate-700/50 transition-colors" onClick={() => requestSort('paymentMethod')}>Tipo Pag. {getSortIndicator('paymentMethod')}</th>
                       <th className="px-6 py-3 cursor-pointer select-none hover:bg-slate-700/50 transition-colors" onClick={() => requestSort('type')}>Tipo {getSortIndicator('type')}</th>
                       <th className="px-6 py-3 text-right cursor-pointer select-none hover:bg-slate-700/50 transition-colors" onClick={() => requestSort('amount')}>Valor {getSortIndicator('amount')}</th>
                       <th className="px-6 py-3 text-center no-print">Ações</th>
@@ -332,12 +342,13 @@ const CashFlow: React.FC = () => {
               </thead>
               <tbody>
                   {isLoading ? (
-                      <tr><td colSpan={6} className="text-center p-10 text-slate-500">Carregando...</td></tr>
+                      <tr><td colSpan={7} className="text-center p-10 text-slate-500">Carregando...</td></tr>
                   ) : currentItems.map((t: Transaction) => (
                       <tr key={t.id} onDoubleClick={() => handleEdit(t)} className={`border-b border-slate-700 hover:bg-slate-700/50 cursor-pointer transition-colors duration-300 ${t.id === newlyAddedId ? 'animate-pulse-fast' : ''}`}>
                           <td className="px-6 py-4">{formatDateForDisplay(t.date)}</td>
                           <td className="px-6 py-4 font-medium uppercase text-slate-200">{t.description}</td>
                           <td className="px-6 py-4">{t.category}</td>
+                          <td className="px-6 py-4">{t.paymentMethod}</td>
                           <td className="px-6 py-4">
                             <span className={`font-semibold ${t.type === 'Entrada' ? 'text-green-400' : 'text-red-400'}`}>
                               {t.type.toUpperCase()}

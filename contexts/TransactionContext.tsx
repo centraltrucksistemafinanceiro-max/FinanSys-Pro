@@ -30,7 +30,8 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
       description: record.description,
       amount: record.amount,
       category: record.expand?.category?.name || 'Geral', // Try to get expanded category name
-      notes: record.notes
+      notes: record.notes,
+      paymentMethod: record.paymentMethod,
   });
 
   const queryTransactions = async (params: { companyId: string, filters?: any }): Promise<Transaction[]> => {

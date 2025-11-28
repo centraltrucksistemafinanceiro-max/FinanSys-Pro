@@ -19,6 +19,7 @@ export interface Transaction {
   amount: number;
   category: string;
   notes?: string;
+  paymentMethod?: string;
 }
 
 export enum BoletoStatus {

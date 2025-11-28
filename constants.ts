@@ -7,6 +7,17 @@ export const COMPANIES: Company[] = [
     { id: 'transportadora', name: 'CENTRAL TRUCK TRANSPORTADORA' },
 ];
 
+export const PAYMENT_METHODS: string[] = [
+    'DINHEIRO',
+    'PIX',
+    'CARTÃO DE CRÉDITO',
+    'CARTÃO DE DÉBITO',
+    'CHEQUE',
+    'DEPÓSITO',
+    'TRANSFERÊNCIA',
+    'OUTRO'
+];
+
 export const DEFAULT_CATEGORIES: string[] = [
     'CONSÓRCIO',
     'DESPESAS FIXAS',
