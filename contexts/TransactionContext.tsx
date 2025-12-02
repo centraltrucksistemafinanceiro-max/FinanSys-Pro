@@ -12,6 +12,7 @@ export interface TransactionContextProps {
   deleteTransaction: (id: string) => Promise<void>;
   updateTransaction: (id: string, updates: Partial<Omit<Transaction, 'id' | 'companyId'>>) => Promise<void>;
   getTotals: (params: { companyId: string, filters?: any }) => Promise<{ totalIncome: number; totalExpenses: number; balance: number; }>;
+  getBalanceUntilDate: (params: { companyId: string, date: string }) => Promise<number>;
 }
 
 export const TransactionContext = createContext<TransactionContextProps | undefined>(undefined);
@@ -82,6 +83,22 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
       acc.balance = acc.totalIncome - acc.totalExpenses;
       return acc;
     }, { totalIncome: 0, totalExpenses: 0, balance: 0 });
+  };
+
+  const getBalanceUntilDate = async (params: { companyId: string, date: string }): Promise<number> => {
+    const { companyId, date } = params;
+    const filterQuery = `company = "${companyId}" && date <= "${date} 23:59:59"`;
+    try {
+      const records = await pb.collection('transactions').getFullList({ filter: filterQuery });
+      const balance = records.reduce((acc, record) => {
+        const amount = Number(record.amount) || 0;
+        return record.type === TransactionType.INCOME ? acc + amount : acc - amount;
+      }, 0);
+      return balance;
+    } catch (err) {
+      console.error("Error getting balance until date", err);
+      return 0;
+    }
   };
 
   const getCategoryIdByName = async (name: string, companyId: string): Promise<string> => {
@@ -168,7 +185,7 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
   };
 
   return (
-    <TransactionContext.Provider value={{ queryTransactions, addTransaction, addMultipleTransactions, deleteTransaction, updateTransaction, getTotals }}>
+    <TransactionContext.Provider value={{ queryTransactions, addTransaction, addMultipleTransactions, deleteTransaction, updateTransaction, getTotals, getBalanceUntilDate }}>
       {children}
     </TransactionContext.Provider>
   );

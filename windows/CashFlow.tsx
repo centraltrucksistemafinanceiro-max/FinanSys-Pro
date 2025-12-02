@@ -1,4 +1,4 @@
-import React, { useContext, useState, useMemo, useEffect, useRef } from 'react';
+import React, { useContext, useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { TransactionContext } from '../contexts/TransactionContext';
 import { CompanyContext } from '../contexts/CompanyContext';
 import { CategoryContext } from '../contexts/CategoryContext';
@@ -19,7 +19,7 @@ const CashFlow: React.FC = () => {
   const dateInputRef = useRef<HTMLInputElement>(null);
     
   if (!transactionContext || !settings || !winManager || !categoryContext || !companyContext) return null;
-  const { queryTransactions, addTransaction, deleteTransaction, updateTransaction } = transactionContext;
+  const { queryTransactions, addTransaction, deleteTransaction, updateTransaction, getBalanceUntilDate } = transactionContext;
   const { categories } = categoryContext;
 
   const getInitialCategory = () => (categories.length > 0 ? categories[0].name : '');
@@ -43,11 +43,11 @@ const CashFlow: React.FC = () => {
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' }>({ key: 'date', direction: 'descending' });
   const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<Transaction[]>([]);
+  const [previousDayBalance, setPreviousDayBalance] = useState(0);
   
   const [isPrinting, setIsPrinting] = useState(false);
   const [newlyAddedId, setNewlyAddedId] = useState<string | null>(null);
   
-  // Modal state
   const [confirmationModal, setConfirmationModal] = useState<{
       isOpen: boolean;
       title: string;
@@ -82,25 +82,36 @@ const CashFlow: React.FC = () => {
     }
   }, [editingTransactionId, items]);
 
-  const [totalEntradas, setTotalEntradas] = useState(0);
-  const [totalSaidas, setTotalSaidas] = useState(0);
+  const fetchPreviousDayBalance = useCallback(async () => {
+    if (!companyContext.currentCompany.id || !getBalanceUntilDate) return;
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const yesterdayString = yesterday.toISOString().split('T')[0];
+    
+    const balance = await getBalanceUntilDate({
+        companyId: companyContext.currentCompany.id,
+        date: yesterdayString,
+    });
+    setPreviousDayBalance(balance);
+  }, [companyContext.currentCompany.id, getBalanceUntilDate]);
 
-  // Data loading and totals calculation
   useEffect(() => {
     const loadData = async () => {
         setIsLoading(true);
         const allItems = await queryTransactions({ companyId: companyContext.currentCompany.id, filters });
         setItems(allItems);
-        
-        const entradas = allItems.filter(t => t.type === TransactionType.INCOME).reduce((sum, t) => sum + Number(t.amount), 0);
-        const saidas = allItems.filter(t => t.type === TransactionType.EXPENSE).reduce((sum, t) => sum + Number(t.amount), 0);
-        
-        setTotalEntradas(entradas);
-        setTotalSaidas(saidas);
+        await fetchPreviousDayBalance();
         setIsLoading(false);
     };
     loadData();
   }, [filters, companyContext.currentCompany.id]);
+
+  const { totalEntradas, totalSaidas } = useMemo(() => {
+    const entradas = items.filter(t => t.type === TransactionType.INCOME).reduce((sum, t) => sum + Number(t.amount), 0);
+    const saidas = items.filter(t => t.type === TransactionType.EXPENSE).reduce((sum, t) => sum + Number(t.amount), 0);
+    return { totalEntradas: entradas, totalSaidas: saidas };
+  }, [items]);
 
   const requestSort = (key: string) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -130,7 +141,6 @@ const CashFlow: React.FC = () => {
     const transactionData = { ...formState, amount: parseFloat(formState.amount) };
     
     if (isEditing) {
-      // Optimistic Update
       setItems(prev => prev.map(t => 
           t.id === editingTransactionId 
           ? { ...t, ...transactionData, id: editingTransactionId! } 
@@ -145,7 +155,8 @@ const CashFlow: React.FC = () => {
         setTimeout(() => setNewlyAddedId(null), 2000);
       }
     }
-
+    
+    fetchPreviousDayBalance();
     setEditingTransactionId(null);
     setFormState({ ...initialFormState, category: getInitialCategory() });
     dateInputRef.current?.focus();
@@ -155,7 +166,7 @@ const CashFlow: React.FC = () => {
       setConfirmationModal({ isOpen: true, title, message, onConfirm });
   };
   
-  const handleDelete = async (e: React.MouseEvent, id: string) => {
+  const handleDelete = (e: React.MouseEvent, id: string) => {
       e.stopPropagation();
       e.preventDefault();
       
@@ -163,9 +174,10 @@ const CashFlow: React.FC = () => {
           "Excluir Transação",
           "Tem certeza que deseja excluir este registro? O saldo será recalculado.",
           async () => {
-              // Optimistic Delete
               setItems(prev => prev.filter(t => t.id !== id));
               await deleteTransaction(id);
+              fetchPreviousDayBalance();
+              setConfirmationModal(null);
           }
       );
   };
@@ -190,7 +202,6 @@ const CashFlow: React.FC = () => {
   }, [items, sortConfig]);
 
   const currentItems = useMemo(() => {
-      // If printing, return ALL sorted items to ensure the PDF contains everything
       if (isPrinting) return sortedItems;
       return sortedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   }, [sortedItems, currentPage, isPrinting]);
@@ -206,13 +217,11 @@ const CashFlow: React.FC = () => {
   
   const handlePrint = () => {
       setIsPrinting(true);
-      // Small timeout to allow React to render the full list (bypass pagination) before opening print dialog
       setTimeout(() => {
           window.print();
       }, 1000);
   };
 
-  // Reset printing state after dialog closes
   useEffect(() => {
       const handleAfterPrint = () => setIsPrinting(false);
       window.addEventListener('afterprint', handleAfterPrint);
@@ -229,8 +238,7 @@ const CashFlow: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full bg-slate-900 text-slate-300 p-4 gap-4 printable-dashboard relative">
-      {/* Confirmation Modal */}
-        {confirmationModal && confirmationModal.isOpen && (
+      {confirmationModal && confirmationModal.isOpen && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in no-print">
                 <div className="bg-white dark:bg-slate-800 rounded-lg shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 animate-scale-in">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{confirmationModal.title}</h3>
@@ -245,7 +253,7 @@ const CashFlow: React.FC = () => {
                         </button>
                         <button 
                             type="button"
-                            onClick={() => { confirmationModal.onConfirm(); setConfirmationModal(null); }}
+                            onClick={confirmationModal.onConfirm}
                             className="px-4 py-2 text-white rounded transition-colors font-medium hover:opacity-90 shadow-md"
                             style={{ backgroundColor: settings.accentColor }}
                         >
@@ -321,6 +329,10 @@ const CashFlow: React.FC = () => {
               <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" />
           </div>
           <div className="flex items-center gap-4">
+              <div className="text-right">
+                  <span className="text-xs text-slate-400 uppercase">Saldo Dia Anterior</span>
+                  <p className="text-xl font-bold text-slate-300">{formatCurrency(previousDayBalance)}</p>
+              </div>
               <div className="text-right">
                   <span className="text-xs text-slate-400 uppercase">Total Entradas</span>
                   <p className="text-xl font-bold text-green-400">{formatCurrency(totalEntradas)}</p>

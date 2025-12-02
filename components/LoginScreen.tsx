@@ -6,6 +6,8 @@ import { WALLPAPERS } from '../constants';
 import { EyeIcon, EyeSlashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid';
 import Logo from './Logo';
 
+const REMEMBER_ME_KEY = 'rememberedUsername';
+
 const LoginScreen: React.FC = () => {
   const auth = useContext(AuthContext);
   const settings = useContext(SettingsContext);
@@ -18,7 +20,7 @@ const LoginScreen: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   
   useEffect(() => {
-    const rememberedUsername = localStorage.getItem('rememberedUsername');
+    const rememberedUsername = localStorage.getItem(REMEMBER_ME_KEY);
     if (rememberedUsername) {
         setUsername(rememberedUsername);
         setRememberMe(true);
@@ -39,9 +41,9 @@ const LoginScreen: React.FC = () => {
     }
     
     if (rememberMe) {
-        localStorage.setItem('rememberedUsername', username.toUpperCase());
+        localStorage.setItem(REMEMBER_ME_KEY, username.toUpperCase());
     } else {
-        localStorage.removeItem('rememberedUsername');
+        localStorage.removeItem(REMEMBER_ME_KEY);
     }
 
     try {
