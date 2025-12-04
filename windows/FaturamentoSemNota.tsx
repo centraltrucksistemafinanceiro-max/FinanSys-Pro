@@ -39,6 +39,7 @@ const FaturamentoSemNota: React.FC = () => {
     nOrcamento: '',
     startDate: '',
     endDate: '',
+    category: '',
   });
   
   const [currentPage, setCurrentPage] = useState(1);
@@ -163,7 +164,7 @@ const FaturamentoSemNota: React.FC = () => {
     }
   };
   
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
       const finalValue = name === 'nOrcamento' ? value.toUpperCase() : value;
       setFilters(prev => ({ ...prev, [name]: finalValue }));
@@ -305,10 +306,11 @@ const FaturamentoSemNota: React.FC = () => {
   const filteredFaturamentos = useMemo(() => {
       return faturamentos.filter(f => {
           const orcamentoMatch = !filters.nOrcamento || f.nOrcamento.toUpperCase().includes(filters.nOrcamento.toUpperCase());
+          const categoryMatch = !filters.category || f.categoria === filters.category;
           let dateMatch = true;
           if (filters.startDate && f.data < filters.startDate) dateMatch = false;
           if (filters.endDate && f.data > filters.endDate) dateMatch = false;
-          return orcamentoMatch && dateMatch;
+          return orcamentoMatch && categoryMatch && dateMatch;
       });
   }, [faturamentos, filters]);
 
@@ -334,8 +336,22 @@ const FaturamentoSemNota: React.FC = () => {
       'Data': formatDateForDisplay(f.data), 'Nº Orçamento': f.nOrcamento, 'Valor': f.valor, 'Condição Pagamento': f.condicaoPagamento, 'Categoria': f.categoria,
   })), [sortedFaturamentos]);
 
-  const totalFiltrado = useMemo(() => {
-    return sortedFaturamentos.reduce((acc, f) => acc + (Number(f.valor) || 0), 0);
+  const { totalFiltrado, totalPositivo, totalNegativo } = useMemo(() => {
+    const totals = sortedFaturamentos.reduce((acc, f) => {
+        const valor = Number(f.valor) || 0;
+        if (valor > 0) {
+            acc.positivo += valor;
+        } else if (valor < 0) {
+            acc.negativo += valor;
+        }
+        return acc;
+    }, { positivo: 0, negativo: 0 });
+
+    return {
+        totalFiltrado: totals.positivo + totals.negativo,
+        totalPositivo: totals.positivo,
+        totalNegativo: totals.negativo,
+    };
   }, [sortedFaturamentos]);
 
   const totalPages = Math.ceil(sortedFaturamentos.length / itemsPerPage);
@@ -446,12 +462,24 @@ const FaturamentoSemNota: React.FC = () => {
 
       <div className="flex-shrink-0 bg-slate-800 p-3 rounded-lg shadow-lg flex flex-wrap justify-between items-center gap-4">
         <div className="flex flex-wrap items-center gap-2 no-print">
-          <input type="text" name="nOrcamento" value={filters.nOrcamento} onChange={handleFilterChange} placeholder="Buscar por nº orçamento..." className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none w-64 uppercase" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} />
+          <input type="text" name="nOrcamento" value={filters.nOrcamento} onChange={handleFilterChange} placeholder="Buscar por nº orçamento..." className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none w-48 uppercase" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} />
+          <select
+            name="category"
+            value={filters.category}
+            onChange={handleFilterChange}
+            className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none"
+            style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}
+          >
+              <option value="">Todas Categorias</option>
+              {Object.values(FaturamentoSemNotaCategoria).map(cat => <option key={cat} value={cat}>{cat}</option>)}
+          </select>
           <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" />
           <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" />
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total Filtrado</span><p className="text-2xl font-bold text-slate-200">{formatCurrency(totalFiltrado)}</p></div>
+        <div className="flex items-center gap-4 flex-wrap justify-end">
+          <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total Positivo</span><p className="text-xl font-bold text-green-400">{formatCurrency(totalPositivo)}</p></div>
+          <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total Negativo</span><p className="text-xl font-bold text-red-400">{formatCurrency(totalNegativo)}</p></div>
+          <div className="text-right"><span className="text-xs text-slate-400 uppercase">Saldo Filtrado</span><p className={`text-2xl font-bold ${totalFiltrado >= 0 ? 'text-slate-200' : 'text-red-400'}`}>{formatCurrency(totalFiltrado)}</p></div>
           <div className="flex items-center gap-2 no-print">
             <button onClick={handlePrint} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title="Imprimir / Salvar PDF"><PrinterIcon className="w-5 h-5" /></button>
             <button onClick={() => exportToXLSX(dataForExport, 'faturamento_sem_nota.xlsx')} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors"><ExportIcon className="w-5 h-5 mr-2" />Exportar XLSX</button>
