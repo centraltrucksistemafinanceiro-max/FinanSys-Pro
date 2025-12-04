@@ -82,7 +82,7 @@ const FinancialForecast: React.FC = () => {
                 const despesaCom = boletos.filter(b => isMatch(b.date)).reduce((sum, b) => sum + (Number(b.amountWithInvoice) || 0), 0);
                 const despesaSem = boletos.filter(b => isMatch(b.date)).reduce((sum, b) => sum + (Number(b.amountWithoutInvoice) || 0), 0);
                 const faturamentoCom = faturamentos.filter(f => isMatch(f.data)).reduce((sum, f) => sum + (Number(f.valor) || 0), 0);
-                const faturamentoSem = faturamentosSN.filter(f => isMatch(f.data) && f.valor > 0).reduce((sum, f) => sum + (Number(f.valor) || 0), 0);
+                const faturamentoSem = faturamentosSN.filter(f => isMatch(f.data)).reduce((sum, f) => sum + (Number(f.valor) || 0), 0);
 
                 return {
                     month: m.label, shortMonth: m.shortLabel,

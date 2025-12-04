@@ -89,7 +89,7 @@ const DashboardGeral: React.FC = () => {
                 faturamentoContext.queryFaturamentos({ companyId, filters: yearFilters }),
                 faturamentoSemNotaContext.queryFaturamentos({ companyId, filters: yearFilters }),
                 boletoContext.queryBoletos({ companyId, filters: yearFilters }),
-                transactionContext.getTotals({ companyId })
+                transactionContext.getTotals({ companyId, filters })
             ]);
 
             // --- KPI Calculations ---
@@ -141,10 +141,19 @@ const DashboardGeral: React.FC = () => {
     };
     
     const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = e.target;
-        if (name === 'startDate') setStartDate(value);
-        if (name === 'endDate') setEndDate(value);
-        setCurrentYear(new Date(startDate).getFullYear());
+        const { name, value } = e.target;
+        if (name === 'startDate') {
+            setStartDate(value);
+            if (value) {
+                // Using split to be robust against timezone issues
+                const year = parseInt(value.split('-')[0], 10);
+                if (!isNaN(year)) {
+                    setCurrentYear(year);
+                }
+            }
+        } else if (name === 'endDate') {
+            setEndDate(value);
+        }
     };
 
     const COMPOSITION_COLORS = ['#3b82f6', '#10b981'];
@@ -159,7 +168,7 @@ const DashboardGeral: React.FC = () => {
                         <button onClick={() => setDateFilter('year')} className="px-4 py-2 text-sm font-medium bg-slate-700 hover:bg-slate-600 rounded-md transition-colors">Este Ano</button>
                         <input type="date" name="startDate" value={startDate} onChange={handleDateInputChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} />
                         <input type="date" name="endDate" value={endDate} onChange={handleDateInputChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}/>
-                        <button onClick={() => { setStartDate(''); setEndDate(''); }} className="px-4 py-2 text-sm font-medium bg-slate-700 hover:bg-slate-600 rounded-md transition-colors">Limpar Filtros</button>
+                        <button onClick={() => { setStartDate(''); setEndDate(''); setCurrentYear(new Date().getFullYear()); }} className="px-4 py-2 text-sm font-medium bg-slate-700 hover:bg-slate-600 rounded-md transition-colors">Limpar Filtros</button>
                     </div>
                     <button 
                         onClick={() => window.print()} 
