@@ -76,7 +76,7 @@ const BoletoControl: React.FC = () => {
     category: '',
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const [descriptionSuggestions, setDescriptionSuggestions] = useState<string[]>([]);
   const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
@@ -372,7 +372,7 @@ const BoletoControl: React.FC = () => {
     let sortableItems = [...filteredBoletos];
     if (sortConfig.key) {
         sortableItems.sort((a, b) => {
-            const key = sortConfig.key;
+            const key = sortConfig.key as keyof (typeof sortableItems[0]);
             if (key === 'totalAmount') {
                 const aTotal = (Number(a.amountWithInvoice) || 0) + (Number(a.amountWithoutInvoice) || 0);
                 const bTotal = (Number(b.amountWithInvoice) || 0) + (Number(b.amountWithoutInvoice) || 0);
@@ -408,7 +408,7 @@ const BoletoControl: React.FC = () => {
       const indexOfLastItem = currentPage * itemsPerPage;
       const indexOfFirstItem = indexOfLastItem - itemsPerPage;
       return sortedBoletos.slice(indexOfFirstItem, indexOfLastItem);
-  }, [sortedBoletos, currentPage, isPrinting]);
+  }, [sortedBoletos, currentPage, isPrinting, itemsPerPage]);
   
   const handleNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
   const handlePrevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
@@ -579,10 +579,28 @@ const BoletoControl: React.FC = () => {
 
         <div className="flex-shrink-0 flex justify-between items-center text-sm text-slate-400 no-print">
             <div>{sortedBoletos.length > 0 ? `Mostrando ${startItemIndex} a ${endItemIndex} de ${sortedBoletos.length} registros` : 'Nenhum registro encontrado'}</div>
-            <div className="flex items-center gap-2">
-                <button type="button" onClick={handlePrevPage} disabled={currentPage === 1} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&lt;</button>
-                <span>{currentPage} / {totalPages > 0 ? totalPages : 1}</span>
-                <button type="button" onClick={handleNextPage} disabled={currentPage === totalPages || totalPages === 0} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&gt;</button>
+            <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                    <select
+                        id="itemsPerPageSelectBoleto"
+                        value={itemsPerPage}
+                        onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                        className="p-1 text-xs rounded bg-slate-700 border border-slate-600 focus:ring-1 focus:ring-offset-0 focus:border-transparent focus:outline-none"
+                        style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}
+                    >
+                        <option value={20}>20</option>
+                        <option value={40}>40</option>
+                        <option value={60}>60</option>
+                        <option value={80}>80</option>
+                        <option value={100}>100</option>
+                    </select>
+                    <label htmlFor="itemsPerPageSelectBoleto" className="hidden sm:inline">por página</label>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button type="button" onClick={handlePrevPage} disabled={currentPage === 1} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&lt;</button>
+                    <span>{currentPage} de {totalPages > 0 ? totalPages : 1}</span>
+                    <button type="button" onClick={handleNextPage} disabled={currentPage === totalPages || totalPages === 0} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&gt;</button>
+                </div>
             </div>
         </div>
     </div>

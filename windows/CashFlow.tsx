@@ -1,3 +1,4 @@
+
 import React, { useContext, useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { TransactionContext } from '../contexts/TransactionContext';
 import { CompanyContext } from '../contexts/CompanyContext';
@@ -39,7 +40,7 @@ const CashFlow: React.FC = () => {
   
   const [filters, setFilters] = useState({ description: '', startDate: '', endDate: '', category: '', paymentMethod: '' });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(20);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' }>({ key: 'date', direction: 'descending' });
   const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<Transaction[]>([]);
@@ -204,7 +205,7 @@ const CashFlow: React.FC = () => {
   const currentItems = useMemo(() => {
       if (isPrinting) return sortedItems;
       return sortedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  }, [sortedItems, currentPage, isPrinting]);
+  }, [sortedItems, currentPage, isPrinting, itemsPerPage]);
 
   const dataForExport = useMemo(() => sortedItems.map(t => ({
       'Data': formatDateForDisplay(t.date), 'Descrição': t.description, 'Categoria': t.category, 'Tipo': t.type, 'Valor': t.amount, 'Tipo Pag.': t.paymentMethod
@@ -212,6 +213,9 @@ const CashFlow: React.FC = () => {
   
   const totalItems = items.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startItemIndex = (currentPage - 1) * itemsPerPage + 1;
+  const endItemIndex = Math.min(currentPage * itemsPerPage, totalItems);
+
   const handleNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
   const handlePrevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
   
@@ -398,11 +402,29 @@ const CashFlow: React.FC = () => {
       </div>
 
       <div className="flex-shrink-0 flex justify-between items-center text-sm text-slate-400 pt-2 no-print">
-          <div>{totalItems > 0 ? `Mostrando ${Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)} a ${Math.min(currentPage * itemsPerPage, totalItems)} de ${totalItems} registros` : 'Nenhum registro encontrado'}</div>
-          <div className="flex items-center gap-2">
+          <div>{totalItems > 0 ? `Mostrando ${startItemIndex} a ${endItemIndex} de ${totalItems} registros` : 'Nenhum registro encontrado'}</div>
+          <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                  <select
+                      id="itemsPerPageSelectCashFlow"
+                      value={itemsPerPage}
+                      onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                      className="p-1 text-xs rounded bg-slate-700 border border-slate-600 focus:ring-1 focus:ring-offset-0 focus:border-transparent focus:outline-none"
+                      style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}
+                  >
+                      <option value={20}>20</option>
+                      <option value={40}>40</option>
+                      <option value={60}>60</option>
+                      <option value={80}>80</option>
+                      <option value={100}>100</option>
+                  </select>
+                  <label htmlFor="itemsPerPageSelectCashFlow" className="hidden sm:inline">por página</label>
+              </div>
+              <div className="flex items-center gap-2">
               <button onClick={handlePrevPage} disabled={currentPage === 1} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&lt;</button>
               <span>{currentPage} de {totalPages > 0 ? totalPages : 1}</span>
               <button onClick={handleNextPage} disabled={currentPage === totalPages || totalPages === 0} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&gt;</button>
+              </div>
           </div>
       </div>
     </div>

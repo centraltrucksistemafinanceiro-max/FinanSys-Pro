@@ -48,7 +48,7 @@ const Faturamento: React.FC = () => {
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' }>({ key: 'data', direction: 'descending' });
   const [viewMode, setViewMode] = useState<'single' | 'batch'>('single');
@@ -304,7 +304,7 @@ const Faturamento: React.FC = () => {
     let sortableItems = [...filteredFaturamentos];
     if (sortConfig.key) {
         sortableItems.sort((a, b) => {
-            const key = sortConfig.key;
+            const key = sortConfig.key as keyof FaturamentoType;
             const aValue = (a as any)[key];
             const bValue = (b as any)[key];
             if (aValue == null) return 1; if (bValue == null) return -1;
@@ -338,8 +338,11 @@ const Faturamento: React.FC = () => {
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     return sortedFaturamentos.slice(indexOfFirstItem, indexOfLastItem);
-  }, [sortedFaturamentos, currentPage, isPrinting]);
+  }, [sortedFaturamentos, currentPage, isPrinting, itemsPerPage]);
 
+  const startItemIndex = (currentPage - 1) * itemsPerPage + 1;
+  const endItemIndex = Math.min(currentPage * itemsPerPage, sortedFaturamentos.length);
+  
   const handleNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
   const handlePrevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
   const getSortIndicator = (key: string) => sortConfig.key === key ? <span className="ml-1 select-none">{sortConfig.direction === 'ascending' ? '▲' : '▼'}</span> : null;
@@ -494,11 +497,29 @@ const Faturamento: React.FC = () => {
         </div>
 
         <div className="flex-shrink-0 p-2 border-t border-slate-700 flex justify-between items-center text-sm text-slate-400 no-print">
-            <div>{sortedFaturamentos.length > 0 ? `Mostrando ${Math.min((currentPage - 1) * itemsPerPage + 1, sortedFaturamentos.length)} a ${Math.min(currentPage * itemsPerPage, sortedFaturamentos.length)} de ${sortedFaturamentos.length} registros` : 'Nenhum registro encontrado'}</div>
-            <div className="flex items-center gap-2">
+            <div>{sortedFaturamentos.length > 0 ? `Mostrando ${startItemIndex} a ${endItemIndex} de ${sortedFaturamentos.length} registros` : 'Nenhum registro encontrado'}</div>
+            <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                    <select
+                        id="itemsPerPageSelectF"
+                        value={itemsPerPage}
+                        onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                        className="p-1 text-xs rounded bg-slate-700 border border-slate-600 focus:ring-1 focus:ring-offset-0 focus:border-transparent focus:outline-none"
+                        style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}
+                    >
+                        <option value={20}>20</option>
+                        <option value={40}>40</option>
+                        <option value={60}>60</option>
+                        <option value={80}>80</option>
+                        <option value={100}>100</option>
+                    </select>
+                    <label htmlFor="itemsPerPageSelectF" className="hidden sm:inline">por página</label>
+                </div>
+                <div className="flex items-center gap-2">
                 <button onClick={handlePrevPage} disabled={currentPage === 1} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&lt;</button>
                 <span>{currentPage} de {totalPages > 0 ? totalPages : 1}</span>
                 <button onClick={handleNextPage} disabled={currentPage === totalPages || totalPages === 0} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&gt;</button>
+                </div>
             </div>
         </div>
       </div>

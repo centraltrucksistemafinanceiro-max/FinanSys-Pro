@@ -42,7 +42,7 @@ const FaturamentoSemNota: React.FC = () => {
   });
   
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const [condicaoSuggestions, setCondicaoSuggestions] = useState<string[]>([]);
   const [isCondicaoFocused, setIsCondicaoFocused] = useState(false);
@@ -103,7 +103,7 @@ const FaturamentoSemNota: React.FC = () => {
     } else {
       setFormState(initialFormState);
     }
-  }, [editingId]);
+  }, [editingId, faturamentos]);
 
   useEffect(() => {
     setHighlightedIndex(-1);
@@ -176,6 +176,22 @@ const FaturamentoSemNota: React.FC = () => {
         winManager.addNotification({ title: "Erro", message: "O campo Valor é obrigatório.", type: "error"});
         return;
     }
+
+    const trimmedNOrcamento = formState.nOrcamento.trim();
+    if (trimmedNOrcamento) {
+      const isDuplicate = faturamentos.some(
+        f => f.nOrcamento.trim().toUpperCase() === trimmedNOrcamento.toUpperCase() && f.id !== editingId
+      );
+
+      if (isDuplicate) {
+        winManager.addNotification({ 
+            title: "Duplicado", 
+            message: `O Nº de Orçamento "${trimmedNOrcamento}" já existe.`, 
+            type: "error"
+        });
+        return;
+      }
+    }
     
     // Helper to determine sign for optimistic update
     const getSignedValue = (val: number, cat: FaturamentoSemNotaCategoria) => {
@@ -194,9 +210,10 @@ const FaturamentoSemNota: React.FC = () => {
       ));
       await updateFaturamento(editingId!, formState);
     } else {
-      await addFaturamento(formState);
-      const data = await queryFaturamentos({ companyId: companyContext.currentCompany.id });
-      setFaturamentos(data);
+      const newFaturamento = await addFaturamento(formState);
+      if (newFaturamento) {
+        setFaturamentos(prev => [newFaturamento, ...prev]);
+      }
     }
     
     setEditingId(null);
@@ -299,7 +316,7 @@ const FaturamentoSemNota: React.FC = () => {
     let sortableItems = [...filteredFaturamentos];
     if (sortConfig.key) {
         sortableItems.sort((a, b) => {
-            const key = sortConfig.key;
+            const key = sortConfig.key as keyof FaturamentoSemNotaType;
             const aValue = (a as any)[key];
             const bValue = (b as any)[key];
             if (aValue == null) return 1; if (bValue == null) return -1;
@@ -327,7 +344,7 @@ const FaturamentoSemNota: React.FC = () => {
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     return sortedFaturamentos.slice(indexOfFirstItem, indexOfLastItem);
-  }, [sortedFaturamentos, currentPage, isPrinting]);
+  }, [sortedFaturamentos, currentPage, isPrinting, itemsPerPage]);
 
   const handleNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
   const handlePrevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
@@ -477,12 +494,30 @@ const FaturamentoSemNota: React.FC = () => {
         {currentItems.length === 0 && <p className="text-center p-10 text-slate-500">Nenhum faturamento encontrado.</p>}
       </div>
 
-      <div className="flex-shrink-0 p-2 border-t border-slate-700 flex justify-between items-center text-sm text-slate-400 no-print">
+      <div className="flex-shrink-0 flex justify-between items-center text-sm text-slate-400 pt-2 no-print">
           <div>{sortedFaturamentos.length > 0 ? `Mostrando ${startItemIndex} a ${endItemIndex} de ${sortedFaturamentos.length} registros` : 'Nenhum registro encontrado'}</div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                  <select
+                      id="itemsPerPageSelectFSN"
+                      value={itemsPerPage}
+                      onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                      className="p-1 text-xs rounded bg-slate-700 border border-slate-600 focus:ring-1 focus:ring-offset-0 focus:border-transparent focus:outline-none"
+                      style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}
+                  >
+                      <option value={20}>20</option>
+                      <option value={40}>40</option>
+                      <option value={60}>60</option>
+                      <option value={80}>80</option>
+                      <option value={100}>100</option>
+                  </select>
+                  <label htmlFor="itemsPerPageSelectFSN" className="hidden sm:inline">por página</label>
+              </div>
+              <div className="flex items-center gap-2">
               <button onClick={handlePrevPage} disabled={currentPage === 1} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&lt;</button>
               <span>{currentPage} de {totalPages > 0 ? totalPages : 1}</span>
               <button onClick={handleNextPage} disabled={currentPage === totalPages || totalPages === 0} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&gt;</button>
+              </div>
           </div>
       </div>
     </div>
