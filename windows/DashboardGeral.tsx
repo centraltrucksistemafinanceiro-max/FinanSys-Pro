@@ -23,7 +23,7 @@ const KPICard = ({ title, value, icon, colorClass, isCurrency = true }: { title:
       {icon}
     </div>
     <div>
-      <p className={`text-3xl font-bold ${colorClass}`}>
+      <p className={`text-2xl font-bold ${colorClass}`}>
         {isCurrency ? formatCurrency(value) : value}
       </p>
     </div>
@@ -101,20 +101,39 @@ const DashboardGeral: React.FC = () => {
             const lucroRealizado = faturamentoTotal - contasPagas;
             
             setKpiData({ faturamentoTotal, balancoCaixa: totalsCaixa.balance, contasPagas, contasVencidas, contasPendentes, lucroRealizado });
-            setCompositionData([{ name: 'Faturamento C/ NF', value: totalFaturamentoComNota }, { name: 'Faturamento S/ NF (Líquido)', value: totalFaturamentoSemNota }]);
+            setCompositionData([
+                { name: 'Faturamento C/ NF', value: totalFaturamentoComNota }, 
+                { name: 'Faturamento S/ NF', value: totalFaturamentoSemNota }
+            ]);
 
-            const monthlyEvo = Array.from({ length: 12 }, (_, i) => ({ name: getMonthShortName(i), 'Faturamento c/ NF': 0, 'Faturamento s/ NF (Líquido)': 0 }));
-            faturamentosAno.forEach(f => monthlyEvo[new Date(f.data).getMonth()]['Faturamento c/ NF'] += (Number(f.valor) || 0));
-            faturamentosSNAno.forEach(f => monthlyEvo[new Date(f.data).getMonth()]['Faturamento s/ NF (Líquido)'] += (Number(f.valor) || 0));
+            // Helper para extrair mês sem erro de fuso horário
+            const getMonthIdx = (dateStr: string) => parseInt(dateStr.split('-')[1], 10) - 1;
+
+            const monthlyEvo = Array.from({ length: 12 }, (_, i) => ({ name: getMonthShortName(i), 'Faturamento c/ NF': 0, 'Faturamento s/ NF': 0 }));
+            faturamentosAno.forEach(f => {
+                const m = getMonthIdx(f.data);
+                if (m >= 0 && m < 12) monthlyEvo[m]['Faturamento c/ NF'] += (Number(f.valor) || 0);
+            });
+            faturamentosSNAno.forEach(f => {
+                const m = getMonthIdx(f.data);
+                if (m >= 0 && m < 12) monthlyEvo[m]['Faturamento s/ NF'] += (Number(f.valor) || 0);
+            });
             setMonthlyEvolutionData(monthlyEvo);
             
             const fatVsContas = Array.from({ length: 12 }, (_, i) => ({ name: getMonthShortName(i), 'Faturamento': 0, 'Contas Pagas': 0 }));
-            faturamentosAno.forEach(f => fatVsContas[new Date(f.data).getMonth()]['Faturamento'] += (Number(f.valor) || 0));
-            faturamentosSNAno.forEach(f => fatVsContas[new Date(f.data).getMonth()]['Faturamento'] += (Number(f.valor) || 0));
+            faturamentosAno.forEach(f => {
+                const m = getMonthIdx(f.data);
+                if (m >= 0 && m < 12) fatVsContas[m]['Faturamento'] += (Number(f.valor) || 0);
+            });
+            faturamentosSNAno.forEach(f => {
+                const m = getMonthIdx(f.data);
+                if (m >= 0 && m < 12) fatVsContas[m]['Faturamento'] += (Number(f.valor) || 0);
+            });
             boletosAno.forEach(b => {
                 if (b.status === BoletoStatus.PAID && b.paymentDate) {
+                    const m = getMonthIdx(b.paymentDate);
                     const totalAmount = (Number(b.amountWithInvoice) || 0) + (Number(b.amountWithoutInvoice) || 0);
-                    fatVsContas[new Date(b.paymentDate).getMonth()]['Contas Pagas'] += totalAmount;
+                    if (m >= 0 && m < 12) fatVsContas[m]['Contas Pagas'] += totalAmount;
                 }
             });
             setFaturamentoVsContasPagasData(fatVsContas);
@@ -161,8 +180,8 @@ const DashboardGeral: React.FC = () => {
                         <button onClick={() => setDateFilter('year')} className="px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 rounded-md transition-colors uppercase tracking-wider">Ano</button>
                     </div>
                     <div className="flex items-center gap-2">
-                        <input type="date" name="startDate" value={startDate} onChange={handleDateInputChange} className="p-2 text-xs rounded bg-slate-800 border border-white/5 focus:ring-1 focus:ring-indigo-500 outline-none" />
-                        <input type="date" name="endDate" value={endDate} onChange={handleDateInputChange} className="p-2 text-xs rounded bg-slate-800 border border-white/5 focus:ring-1 focus:ring-indigo-500 outline-none" />
+                        <input type="date" name="startDate" value={startDate} onChange={handleDateInputChange} className="p-2 text-xs rounded bg-slate-800 border border-slate-600 focus:ring-1 focus:ring-indigo-500 outline-none" />
+                        <input type="date" name="endDate" value={endDate} onChange={handleDateInputChange} className="p-2 text-xs rounded bg-slate-800 border border-slate-600 focus:ring-1 focus:ring-indigo-500 outline-none" />
                     </div>
                     <button onClick={() => window.print()} className="p-2 bg-slate-800 rounded-md shadow-sm hover:bg-slate-700 border border-white/5 transition-colors" title="Imprimir"><PrinterIcon className="w-5 h-5 text-slate-300" /></button>
                 </div>
@@ -179,9 +198,9 @@ const DashboardGeral: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 <div className="lg:col-span-2 bg-slate-800/80 p-4 rounded-xl border border-white/5 shadow-2xl">
-                    <h2 className="font-bold mb-4 text-slate-300 uppercase text-xs tracking-widest">Evolução Mensal ({currentYear})</h2>
+                    <h2 className="font-bold mb-4 text-slate-300 uppercase text-xs tracking-widest border-l-2 border-indigo-500 pl-2">Evolução Mensal ({currentYear})</h2>
                     <ResponsiveContainer width="100%" height={300}>
-                        <AreaChart data={monthlyEvolutionData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+                        <AreaChart data={monthlyEvolutionData} margin={{ top: 5, right: 30, left: 30, bottom: 5 }}>
                             <defs>
                                 <linearGradient id="colorCNF" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
                                 <linearGradient id="colorSNF" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
@@ -190,35 +209,47 @@ const DashboardGeral: React.FC = () => {
                             <YAxis stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} tickFormatter={(value) => formatCurrency(Number(value))} />
                             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                             <Tooltip content={<CustomTooltip />} />
-                            <Legend wrapperStyle={{fontSize: "10px", textTransform: "uppercase"}} verticalAlign="top" align="right" />
+                            <Legend wrapperStyle={{fontSize: "10px", textTransform: "uppercase", paddingTop: "15px"}} verticalAlign="top" align="right" />
                             <Area type="monotone" dataKey="Faturamento c/ NF" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorCNF)" />
-                            <Area type="monotone" dataKey="Faturamento s/ NF (Líquido)" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorSNF)" />
+                            <Area type="monotone" dataKey="Faturamento s/ NF" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorSNF)" />
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
                 <div className="lg:col-span-1 bg-slate-800/80 p-4 rounded-xl border border-white/5 shadow-2xl flex flex-col">
-                    <h2 className="font-bold mb-4 text-slate-300 uppercase text-xs tracking-widest">Composição</h2>
-                    <ResponsiveContainer width="100%" height={100}>
-                         <PieChart>
-                            <Pie data={compositionData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={8}>
-                                {compositionData.map((entry, index) => <Cell key={`cell-${index}`} fill={COMPOSITION_COLORS[index % COMPOSITION_COLORS.length]} stroke="none" />)}
-                            </Pie>
-                            <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                            <Legend iconType="circle" wrapperStyle={{fontSize: "10px", textTransform: "uppercase"}} verticalAlign="bottom" />
-                        </PieChart>
-                    </ResponsiveContainer>
+                    <h2 className="font-bold mb-4 text-slate-300 uppercase text-xs tracking-widest border-l-2 border-indigo-500 pl-2">Composição</h2>
+                    <div className="flex-grow flex items-center justify-center">
+                        <ResponsiveContainer width="100%" height={250}>
+                             <PieChart>
+                                <Pie 
+                                    data={compositionData} 
+                                    dataKey="value" 
+                                    nameKey="name" 
+                                    cx="50%" 
+                                    cy="50%" 
+                                    innerRadius={60} 
+                                    outerRadius={80} 
+                                    paddingAngle={5}
+                                    label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                                >
+                                    {compositionData.map((entry, index) => <Cell key={`cell-${index}`} fill={COMPOSITION_COLORS[index % COMPOSITION_COLORS.length]} stroke="none" />)}
+                                </Pie>
+                                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                                <Legend iconType="circle" wrapperStyle={{fontSize: "10px", textTransform: "uppercase"}} verticalAlign="bottom" />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
             </div>
 
-            <div className="w-full bg-slate-800/80 p-4 rounded-xl border border-white/5 shadow-2xl">
-                <h2 className="font-bold mb-4 text-slate-300 uppercase text-xs tracking-widest">Performance Global ({currentYear})</h2>
-                 <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={faturamentoVsContasPagasData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+            <div className="w-full bg-slate-800/80 p-4 rounded-xl border border-white/5 shadow-2xl mb-4">
+                <h2 className="font-bold mb-4 text-slate-300 uppercase text-xs tracking-widest border-l-2 border-indigo-500 pl-2">Performance Global ({currentYear})</h2>
+                 <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={faturamentoVsContasPagasData} margin={{ top: 5, right: 30, left: 30, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                         <XAxis dataKey="name" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
                         <YAxis stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} tickFormatter={(value) => formatCurrency(Number(value))} />
                         <Tooltip content={<CustomTooltip />} />
-                        <Legend wrapperStyle={{fontSize: "10px", textTransform: "uppercase"}} verticalAlign="top" align="right" />
+                        <Legend wrapperStyle={{fontSize: "10px", textTransform: "uppercase", paddingTop: "15px"}} verticalAlign="top" align="right" />
                         <Bar dataKey="Faturamento" fill="#10b981" radius={[4, 4, 0, 0]} />
                         <Bar dataKey="Contas Pagas" fill="#f43f5e" radius={[4, 4, 0, 0]} />
                     </BarChart>

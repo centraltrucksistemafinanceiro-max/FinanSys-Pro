@@ -1,4 +1,3 @@
-
 import React, { useState, useContext, useMemo, useEffect } from 'react';
 import { BoletoContext } from '../contexts/BoletoContext';
 import { FaturamentoContext } from '../contexts/FaturamentoContext';
@@ -166,7 +165,7 @@ const FinancialForecast: React.FC = () => {
             <div className="bg-slate-800 p-4 rounded-lg shadow-lg mb-6">
                 <h2 className="font-bold mb-4 text-slate-300">Projeção Faturamento vs. Despesa</h2>
                 <ResponsiveContainer width="100%" height={300}>
-                    <AreaChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                    <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 30, bottom: 5 }}>
                         <defs>
                             <linearGradient id="colorFaturamento" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
                             <linearGradient id="colorDespesa" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/><stop offset="95%" stopColor="#ef4444" stopOpacity={0}/></linearGradient>
