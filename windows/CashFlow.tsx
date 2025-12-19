@@ -1,4 +1,3 @@
-
 import React, { useContext, useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { TransactionContext } from '../contexts/TransactionContext';
 import { CompanyContext } from '../contexts/CompanyContext';
@@ -25,6 +24,10 @@ const CashFlow: React.FC = () => {
 
   const getInitialCategory = () => (categories.length > 0 ? categories[0].name : '');
 
+  const today = new Date();
+  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+
   const initialFormState = {
     type: TransactionType.EXPENSE,
     date: new Date().toISOString().split('T')[0],
@@ -38,9 +41,13 @@ const CashFlow: React.FC = () => {
   const [formState, setFormState] = useState(initialFormState);
   const [editingTransactionId, setEditingTransactionId] = useState<string | null>(null);
   
-  const [filters, setFilters] = useState({ description: '', startDate: '', endDate: '', category: '', paymentMethod: '' });
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [filters, setFilters] = useState({ 
+    description: '', 
+    startDate: firstDayOfMonth, 
+    endDate: lastDayOfMonth, 
+    category: '', 
+    paymentMethod: '' 
+  });
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' }>({ key: 'date', direction: 'descending' });
   const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<Transaction[]>([]);
@@ -118,7 +125,6 @@ const CashFlow: React.FC = () => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig.key === key && sortConfig.direction === 'ascending') direction = 'descending';
     setSortConfig({ key, direction });
-    setCurrentPage(1);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -129,7 +135,6 @@ const CashFlow: React.FC = () => {
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: name === 'description' ? value.toUpperCase() : value }));
-    setCurrentPage(1);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -202,22 +207,9 @@ const CashFlow: React.FC = () => {
         return sortableItems;
   }, [items, sortConfig]);
 
-  const currentItems = useMemo(() => {
-      if (isPrinting) return sortedItems;
-      return sortedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  }, [sortedItems, currentPage, isPrinting, itemsPerPage]);
-
   const dataForExport = useMemo(() => sortedItems.map(t => ({
       'Data': formatDateForDisplay(t.date), 'Descrição': t.description, 'Categoria': t.category, 'Tipo': t.type, 'Valor': t.amount, 'Tipo Pag.': t.paymentMethod
   })), [sortedItems]);
-  
-  const totalItems = items.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startItemIndex = (currentPage - 1) * itemsPerPage + 1;
-  const endItemIndex = Math.min(currentPage * itemsPerPage, totalItems);
-
-  const handleNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
-  const handlePrevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
   
   const handlePrint = () => {
       setIsPrinting(true);
@@ -373,7 +365,7 @@ const CashFlow: React.FC = () => {
               <tbody>
                   {isLoading ? (
                       <tr><td colSpan={7} className="text-center p-10 text-slate-500">Carregando...</td></tr>
-                  ) : currentItems.map((t: Transaction) => (
+                  ) : sortedItems.map((t: Transaction) => (
                       <tr key={t.id} onDoubleClick={() => handleEdit(t)} className={`border-b border-slate-700 hover:bg-slate-700/50 cursor-pointer transition-colors duration-300 ${t.id === newlyAddedId ? 'animate-pulse-fast' : ''}`}>
                           <td className="px-6 py-4">{formatDateForDisplay(t.date)}</td>
                           <td className="px-6 py-4 font-medium uppercase text-slate-200">{t.description}</td>
@@ -399,33 +391,6 @@ const CashFlow: React.FC = () => {
           </table>
         </div>
            {!isLoading && items.length === 0 && <p className="text-center p-10 text-slate-500">Nenhuma transação encontrada.</p>}
-      </div>
-
-      <div className="flex-shrink-0 flex justify-between items-center text-sm text-slate-400 pt-2 no-print">
-          <div>{totalItems > 0 ? `Mostrando ${startItemIndex} a ${endItemIndex} de ${totalItems} registros` : 'Nenhum registro encontrado'}</div>
-          <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                  <select
-                      id="itemsPerPageSelectCashFlow"
-                      value={itemsPerPage}
-                      onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                      className="p-1 text-xs rounded bg-slate-700 border border-slate-600 focus:ring-1 focus:ring-offset-0 focus:border-transparent focus:outline-none"
-                      style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}
-                  >
-                      <option value={20}>20</option>
-                      <option value={40}>40</option>
-                      <option value={60}>60</option>
-                      <option value={80}>80</option>
-                      <option value={100}>100</option>
-                  </select>
-                  <label htmlFor="itemsPerPageSelectCashFlow" className="hidden sm:inline">por página</label>
-              </div>
-              <div className="flex items-center gap-2">
-              <button onClick={handlePrevPage} disabled={currentPage === 1} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&lt;</button>
-              <span>{currentPage} de {totalPages > 0 ? totalPages : 1}</span>
-              <button onClick={handleNextPage} disabled={currentPage === totalPages || totalPages === 0} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&gt;</button>
-              </div>
-          </div>
       </div>
     </div>
   );

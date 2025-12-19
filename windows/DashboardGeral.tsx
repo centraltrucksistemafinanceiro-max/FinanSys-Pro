@@ -1,4 +1,3 @@
-
 import React, { useContext, useMemo, useState, useEffect } from 'react';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
 import { SettingsContext } from '../contexts/SettingsContext';
@@ -18,7 +17,7 @@ const getMonthShortName = (monthIndex: number) => {
 };
 
 const KPICard = ({ title, value, icon, colorClass, isCurrency = true }: { title: string, value: number, icon: React.ReactNode, colorClass: string, isCurrency?: boolean }) => (
-  <div className="bg-slate-800 p-4 rounded-lg shadow-lg flex flex-col justify-between">
+  <div className="bg-slate-800 p-4 rounded-lg shadow-lg flex flex-col justify-between border border-white/5 hover:border-white/10 transition-colors">
     <div className="flex items-center justify-between text-slate-400">
       <p className="text-sm font-medium">{title}</p>
       {icon}
@@ -34,7 +33,7 @@ const KPICard = ({ title, value, icon, colorClass, isCurrency = true }: { title:
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-700 p-3 rounded-md border border-slate-600 text-sm">
+      <div className="bg-slate-700 p-3 rounded-md border border-slate-600 text-sm shadow-2xl">
         <p className="font-bold text-slate-100 mb-2">{label}</p>
         {payload.map((pld: any, index: number) => (
           <p key={index} style={{ color: pld.color }}>
@@ -77,7 +76,6 @@ const DashboardGeral: React.FC = () => {
             const filters = { startDate, endDate };
             const yearFilters = { startDate: `${currentYear}-01-01`, endDate: `${currentYear}-12-31`};
 
-            // Fetch all data for the year for charts, and for the selected period for KPIs
             const [
                 faturamentosPeriodo, faturamentosSNPeriodo, boletosPeriodo,
                 faturamentosAno, faturamentosSNAno, boletosAno,
@@ -92,7 +90,6 @@ const DashboardGeral: React.FC = () => {
                 transactionContext.getTotals({ companyId, filters })
             ]);
 
-            // --- KPI Calculations ---
             const totalFaturamentoComNota = faturamentosPeriodo.reduce((acc, f) => acc + (Number(f.valor) || 0), 0);
             const totalFaturamentoSemNota = faturamentosSNPeriodo.reduce((acc, f) => acc + (Number(f.valor) || 0), 0);
             const faturamentoTotal = totalFaturamentoComNota + totalFaturamentoSemNota;
@@ -106,7 +103,6 @@ const DashboardGeral: React.FC = () => {
             setKpiData({ faturamentoTotal, balancoCaixa: totalsCaixa.balance, contasPagas, contasVencidas, contasPendentes, lucroRealizado });
             setCompositionData([{ name: 'Faturamento C/ NF', value: totalFaturamentoComNota }, { name: 'Faturamento S/ NF (Líquido)', value: totalFaturamentoSemNota }]);
 
-            // --- Chart Data Calculations (Year) ---
             const monthlyEvo = Array.from({ length: 12 }, (_, i) => ({ name: getMonthShortName(i), 'Faturamento c/ NF': 0, 'Faturamento s/ NF (Líquido)': 0 }));
             faturamentosAno.forEach(f => monthlyEvo[new Date(f.data).getMonth()]['Faturamento c/ NF'] += (Number(f.valor) || 0));
             faturamentosSNAno.forEach(f => monthlyEvo[new Date(f.data).getMonth()]['Faturamento s/ NF (Líquido)'] += (Number(f.valor) || 0));
@@ -145,11 +141,8 @@ const DashboardGeral: React.FC = () => {
         if (name === 'startDate') {
             setStartDate(value);
             if (value) {
-                // Using split to be robust against timezone issues
                 const year = parseInt(value.split('-')[0], 10);
-                if (!isNaN(year)) {
-                    setCurrentYear(year);
-                }
+                if (!isNaN(year)) setCurrentYear(year);
             }
         } else if (name === 'endDate') {
             setEndDate(value);
@@ -159,24 +152,19 @@ const DashboardGeral: React.FC = () => {
     const COMPOSITION_COLORS = ['#3b82f6', '#10b981'];
 
     return (
-        <div className="p-4 bg-slate-900 h-full overflow-y-auto text-slate-200 font-sans printable-dashboard">
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                 <h1 className="text-2xl font-bold">Dashboard Geral</h1>
+        <div className="p-4 bg-slate-900 h-full overflow-y-auto text-slate-200 font-sans printable-dashboard custom-scrollbar">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+                 <h1 className="text-2xl font-bold tracking-tight">FinanSys <span className="text-indigo-400">Pro v3.0</span></h1>
                  <div className="flex items-center gap-4 no-print">
-                    <div className="flex items-center gap-2">
-                        <button onClick={() => setDateFilter('month')} className="px-4 py-2 text-sm font-medium bg-slate-700 hover:bg-slate-600 rounded-md transition-colors">Este Mês</button>
-                        <button onClick={() => setDateFilter('year')} className="px-4 py-2 text-sm font-medium bg-slate-700 hover:bg-slate-600 rounded-md transition-colors">Este Ano</button>
-                        <input type="date" name="startDate" value={startDate} onChange={handleDateInputChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} />
-                        <input type="date" name="endDate" value={endDate} onChange={handleDateInputChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}/>
-                        <button onClick={() => { setStartDate(''); setEndDate(''); setCurrentYear(new Date().getFullYear()); }} className="px-4 py-2 text-sm font-medium bg-slate-700 hover:bg-slate-600 rounded-md transition-colors">Limpar Filtros</button>
+                    <div className="flex items-center gap-2 bg-slate-800/50 p-1 rounded-lg border border-white/5">
+                        <button onClick={() => setDateFilter('month')} className="px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 rounded-md transition-colors uppercase tracking-wider">Mês</button>
+                        <button onClick={() => setDateFilter('year')} className="px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 rounded-md transition-colors uppercase tracking-wider">Ano</button>
                     </div>
-                    <button 
-                        onClick={() => window.print()} 
-                        className="p-2 bg-white dark:bg-slate-800 rounded-md shadow-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                        title="Imprimir"
-                    >
-                        <PrinterIcon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <input type="date" name="startDate" value={startDate} onChange={handleDateInputChange} className="p-2 text-xs rounded bg-slate-800 border border-white/5 focus:ring-1 focus:ring-indigo-500 outline-none" />
+                        <input type="date" name="endDate" value={endDate} onChange={handleDateInputChange} className="p-2 text-xs rounded bg-slate-800 border border-white/5 focus:ring-1 focus:ring-indigo-500 outline-none" />
+                    </div>
+                    <button onClick={() => window.print()} className="p-2 bg-slate-800 rounded-md shadow-sm hover:bg-slate-700 border border-white/5 transition-colors" title="Imprimir"><PrinterIcon className="w-5 h-5 text-slate-300" /></button>
                 </div>
             </div>
 
@@ -184,55 +172,55 @@ const DashboardGeral: React.FC = () => {
                 <KPICard title="Faturamento Total" value={kpiData.faturamentoTotal} icon={<ArrowTrendingUpIcon className="w-6 h-6" />} colorClass="text-green-400" />
                 <KPICard title="Balanço do Caixa" value={kpiData.balancoCaixa} icon={<ScaleIcon className="w-6 h-6" />} colorClass={kpiData.balancoCaixa >= 0 ? 'text-blue-400' : 'text-red-400'} />
                 <KPICard title="Total Contas Pagas" value={kpiData.contasPagas} icon={<CurrencyDollarIcon className="w-6 h-6" />} colorClass="text-cyan-400" />
-                <KPICard title="Total Contas Vencidas" value={kpiData.contasVencidas} icon={<ClockIcon className="w-6 h-6" />} colorClass="text-red-500" />
+                <KPICard title="Contas Vencidas" value={kpiData.contasVencidas} icon={<ClockIcon className="w-6 h-6" />} colorClass="text-red-500" />
                 <KPICard title="Contas Pendentes" value={kpiData.contasPendentes} icon={<ClockIcon className="w-6 h-6" />} colorClass="text-yellow-400" />
                 <KPICard title="Lucro/Prejuízo" value={kpiData.lucroRealizado} icon={<CurrencyDollarIcon className="w-6 h-6" />} colorClass={kpiData.lucroRealizado >= 0 ? "text-green-400" : "text-red-400"} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <div className="lg:col-span-2 bg-slate-800 p-4 rounded-lg shadow-lg">
-                    <h2 className="font-bold mb-4 text-slate-300">Evolução do Faturamento Mensal ({currentYear})</h2>
+                <div className="lg:col-span-2 bg-slate-800/80 p-4 rounded-xl border border-white/5 shadow-2xl">
+                    <h2 className="font-bold mb-4 text-slate-300 uppercase text-xs tracking-widest">Evolução Mensal ({currentYear})</h2>
                     <ResponsiveContainer width="100%" height={300}>
                         <AreaChart data={monthlyEvolutionData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
                             <defs>
                                 <linearGradient id="colorCNF" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
                                 <linearGradient id="colorSNF" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
                             </defs>
-                            <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
-                            <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(value) => formatCurrency(Number(value))} />
-                            <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
+                            <XAxis dataKey="name" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                            <YAxis stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} tickFormatter={(value) => formatCurrency(Number(value))} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                             <Tooltip content={<CustomTooltip />} />
-                            <Legend wrapperStyle={{fontSize: "12px"}} />
-                            <Area type="monotone" dataKey="Faturamento c/ NF" stroke="#3b82f6" fillOpacity={1} fill="url(#colorCNF)" />
-                            <Area type="monotone" dataKey="Faturamento s/ NF (Líquido)" stroke="#10b981" fillOpacity={1} fill="url(#colorSNF)" />
+                            <Legend wrapperStyle={{fontSize: "10px", textTransform: "uppercase"}} verticalAlign="top" align="right" />
+                            <Area type="monotone" dataKey="Faturamento c/ NF" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorCNF)" />
+                            <Area type="monotone" dataKey="Faturamento s/ NF (Líquido)" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorSNF)" />
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
-                <div className="lg:col-span-1 bg-slate-800 p-4 rounded-lg shadow-lg flex flex-col">
-                    <h2 className="font-bold mb-4 text-slate-300">Composição do Faturamento</h2>
-                    <ResponsiveContainer width="100%" height="100%">
+                <div className="lg:col-span-1 bg-slate-800/80 p-4 rounded-xl border border-white/5 shadow-2xl flex flex-col">
+                    <h2 className="font-bold mb-4 text-slate-300 uppercase text-xs tracking-widest">Composição</h2>
+                    <ResponsiveContainer width="100%" height={100}>
                          <PieChart>
-                            <Pie data={compositionData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#8884d8" paddingAngle={5}>
-                                {compositionData.map((entry, index) => <Cell key={`cell-${index}`} fill={COMPOSITION_COLORS[index % COMPOSITION_COLORS.length]} />)}
+                            <Pie data={compositionData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={8}>
+                                {compositionData.map((entry, index) => <Cell key={`cell-${index}`} fill={COMPOSITION_COLORS[index % COMPOSITION_COLORS.length]} stroke="none" />)}
                             </Pie>
                             <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                            <Legend iconType="circle" wrapperStyle={{fontSize: "12px"}} />
+                            <Legend iconType="circle" wrapperStyle={{fontSize: "10px", textTransform: "uppercase"}} verticalAlign="bottom" />
                         </PieChart>
                     </ResponsiveContainer>
                 </div>
             </div>
 
-            <div className="w-full bg-slate-800 p-4 rounded-lg shadow-lg">
-                <h2 className="font-bold mb-4 text-slate-300">Evolução: Faturamento vs. Contas Pagas ({currentYear})</h2>
+            <div className="w-full bg-slate-800/80 p-4 rounded-xl border border-white/5 shadow-2xl">
+                <h2 className="font-bold mb-4 text-slate-300 uppercase text-xs tracking-widest">Performance Global ({currentYear})</h2>
                  <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={faturamentoVsContasPagasData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
-                        <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
-                        <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(value) => formatCurrency(Number(value))} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                        <XAxis dataKey="name" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
+                        <YAxis stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} tickFormatter={(value) => formatCurrency(Number(value))} />
                         <Tooltip content={<CustomTooltip />} />
-                        <Legend wrapperStyle={{fontSize: "12px"}} />
-                        <Bar dataKey="Faturamento" fill="#10b981" />
-                        <Bar dataKey="Contas Pagas" fill="#ef4444" />
+                        <Legend wrapperStyle={{fontSize: "10px", textTransform: "uppercase"}} verticalAlign="top" align="right" />
+                        <Bar dataKey="Faturamento" fill="#10b981" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="Contas Pagas" fill="#f43f5e" radius={[4, 4, 0, 0]} />
                     </BarChart>
                 </ResponsiveContainer>
             </div>

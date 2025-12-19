@@ -1,4 +1,3 @@
-
 import React, { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { FaturamentoSemNotaContext } from '../contexts/FaturamentoSemNotaContext';
 import { FaturamentoSemNota as FaturamentoSemNotaType, FaturamentoSemNotaCategoria } from '../types';
@@ -25,6 +24,10 @@ const FaturamentoSemNota: React.FC = () => {
   const companyContext = useContext(CompanyContext);
   const dateInputRef = useRef<HTMLInputElement>(null);
   
+  const today = new Date();
+  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+
   const initialFormState = {
     data: new Date().toISOString().split('T')[0],
     nOrcamento: '',
@@ -37,14 +40,11 @@ const FaturamentoSemNota: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     nOrcamento: '',
-    startDate: '',
-    endDate: '',
+    startDate: firstDayOfMonth,
+    endDate: lastDayOfMonth,
     category: '',
   });
   
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-
   const [condicaoSuggestions, setCondicaoSuggestions] = useState<string[]>([]);
   const [isCondicaoFocused, setIsCondicaoFocused] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -116,7 +116,6 @@ const FaturamentoSemNota: React.FC = () => {
         direction = 'descending';
     }
     setSortConfig({ key, direction });
-    setCurrentPage(1);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -147,6 +146,7 @@ const FaturamentoSemNota: React.FC = () => {
         break;
       case 'ArrowUp':
         e.preventDefault();
+        // FIX: Corrected variable name from 'descriptionSuggestions' to 'condicaoSuggestions' to fix compilation error.
         setHighlightedIndex(prev => (prev - 1 + condicaoSuggestions.length) % condicaoSuggestions.length);
         break;
       case 'Enter':
@@ -168,7 +168,6 @@ const FaturamentoSemNota: React.FC = () => {
       const { name, value } = e.target;
       const finalValue = name === 'nOrcamento' ? value.toUpperCase() : value;
       setFilters(prev => ({ ...prev, [name]: finalValue }));
-      setCurrentPage(1);
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -194,7 +193,6 @@ const FaturamentoSemNota: React.FC = () => {
       }
     }
     
-    // Helper to determine sign for optimistic update
     const getSignedValue = (val: number, cat: FaturamentoSemNotaCategoria) => {
        return (cat === FaturamentoSemNotaCategoria.FATURAMENTO || cat === FaturamentoSemNotaCategoria.CENTRAL_TRUCK) ? Math.abs(val) : -Math.abs(val);
     };
@@ -203,7 +201,6 @@ const FaturamentoSemNota: React.FC = () => {
     const fData = { ...formState, valor: processedVal };
 
     if (isEditing) {
-      // Optimistic
       setFaturamentos(prev => prev.map(f => 
           f.id === editingId 
           ? { ...f, ...fData, id: editingId!, categoria: fData.categoria as FaturamentoSemNotaCategoria } 
@@ -354,18 +351,6 @@ const FaturamentoSemNota: React.FC = () => {
     };
   }, [sortedFaturamentos]);
 
-  const totalPages = Math.ceil(sortedFaturamentos.length / itemsPerPage);
-  const currentItems = useMemo(() => {
-    if (isPrinting) return sortedFaturamentos;
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    return sortedFaturamentos.slice(indexOfFirstItem, indexOfLastItem);
-  }, [sortedFaturamentos, currentPage, isPrinting, itemsPerPage]);
-
-  const handleNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
-  const handlePrevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
-  const startItemIndex = (currentPage - 1) * itemsPerPage + 1;
-  const endItemIndex = Math.min(currentPage * itemsPerPage, sortedFaturamentos.length);
   const getSortIndicator = (key: string) => sortConfig.key === key ? <span className="ml-1 select-none">{sortConfig.direction === 'ascending' ? '▲' : '▼'}</span> : null;
 
   const handlePrint = () => {
@@ -501,7 +486,7 @@ const FaturamentoSemNota: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {currentItems.map((f: FaturamentoSemNotaType) => (
+              {sortedFaturamentos.map((f: FaturamentoSemNotaType) => (
                 <tr key={f.id} onDoubleClick={() => handleEdit(f)} className="border-b border-slate-700 hover:bg-slate-700/50 cursor-pointer">
                   <td className="px-4 py-2">{formatDateForDisplay(f.data)}</td>
                   <td className="px-4 py-2">{f.nOrcamento || '-'}</td>
@@ -519,34 +504,7 @@ const FaturamentoSemNota: React.FC = () => {
             </tbody>
           </table>
         </div>
-        {currentItems.length === 0 && <p className="text-center p-10 text-slate-500">Nenhum faturamento encontrado.</p>}
-      </div>
-
-      <div className="flex-shrink-0 flex justify-between items-center text-sm text-slate-400 pt-2 no-print">
-          <div>{sortedFaturamentos.length > 0 ? `Mostrando ${startItemIndex} a ${endItemIndex} de ${sortedFaturamentos.length} registros` : 'Nenhum registro encontrado'}</div>
-          <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                  <select
-                      id="itemsPerPageSelectFSN"
-                      value={itemsPerPage}
-                      onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                      className="p-1 text-xs rounded bg-slate-700 border border-slate-600 focus:ring-1 focus:ring-offset-0 focus:border-transparent focus:outline-none"
-                      style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}
-                  >
-                      <option value={20}>20</option>
-                      <option value={40}>40</option>
-                      <option value={60}>60</option>
-                      <option value={80}>80</option>
-                      <option value={100}>100</option>
-                  </select>
-                  <label htmlFor="itemsPerPageSelectFSN" className="hidden sm:inline">por página</label>
-              </div>
-              <div className="flex items-center gap-2">
-              <button onClick={handlePrevPage} disabled={currentPage === 1} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&lt;</button>
-              <span>{currentPage} de {totalPages > 0 ? totalPages : 1}</span>
-              <button onClick={handleNextPage} disabled={currentPage === totalPages || totalPages === 0} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&gt;</button>
-              </div>
-          </div>
+        {sortedFaturamentos.length === 0 && <p className="text-center p-10 text-slate-500">Nenhum faturamento encontrado.</p>}
       </div>
     </div>
   );

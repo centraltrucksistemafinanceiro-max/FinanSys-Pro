@@ -1,4 +1,3 @@
-
 import React, { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { BoletoContext } from '../contexts/BoletoContext';
 import { CategoryContext } from '../contexts/CategoryContext';
@@ -59,6 +58,10 @@ const BoletoControl: React.FC = () => {
 
   const getInitialCategory = () => (categories.length > 0 ? categories[0].name : '');
   
+  const today = new Date();
+  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+
   const initialFormState = {
     date: new Date().toISOString().split('T')[0],
     description: '',
@@ -71,12 +74,10 @@ const BoletoControl: React.FC = () => {
   const [editingBoletoId, setEditingBoletoId] = useState<string | null>(null);
    const [filters, setFilters] = useState({
     description: '',
-    startDate: '',
-    endDate: '',
+    startDate: firstDayOfMonth,
+    endDate: lastDayOfMonth,
     category: '',
   });
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const [descriptionSuggestions, setDescriptionSuggestions] = useState<string[]>([]);
   const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
@@ -137,7 +138,6 @@ const BoletoControl: React.FC = () => {
         direction = 'descending';
     }
     setSortConfig({ key, direction });
-    setCurrentPage(1);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -186,7 +186,6 @@ const BoletoControl: React.FC = () => {
     const { name, value } = e.target;
     const finalValue = name === 'description' ? value.toUpperCase() : value;
     setFilters(prev => ({ ...prev, [name]: finalValue }));
-    setCurrentPage(1);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -208,7 +207,6 @@ const BoletoControl: React.FC = () => {
     };
     
     if (isEditing) {
-      // Optimistic Update for Edit
       setBoletos(prev => prev.map(b => 
           b.id === editingBoletoId
           ? { ...b, ...boletoData, amountWithInvoice: Number(boletoData.amountWithInvoice), amountWithoutInvoice: Number(boletoData.amountWithoutInvoice) }
@@ -219,10 +217,9 @@ const BoletoControl: React.FC = () => {
       setEditingBoletoId(null);
     } else {
       await addBoleto(boletoData);
-      await loadBoletos(); // Refresh to get new item with ID
+      await loadBoletos();
     }
     
-    // Reset form
     const resetCategory = categories.length > 0 ? categories[0].name : '';
     setFormState({ ...initialFormState, category: resetCategory });
     descriptionInputRef.current?.focus();
@@ -230,7 +227,6 @@ const BoletoControl: React.FC = () => {
 
   const handleProcessBatch = async () => {
     setIsProcessing(true);
-    
     const lines = batchData.split('\n').filter(line => line.trim() !== '');
     if (lines.length === 0) {
         winManager.addNotification({ title: 'Aviso', message: 'Nenhum dado para processar.', type: 'warning' });
@@ -289,15 +285,11 @@ const BoletoControl: React.FC = () => {
           "Excluir Boleto",
           "Tem certeza que deseja excluir este boleto? Esta ação não pode ser desfeita.",
           async () => {
-            // Store previous state for rollback
             const previousBoletos = [...boletos];
-            
-            // Optimistic Delete
             setBoletos(prev => prev.filter(b => b.id !== id));
-            
             try {
                 await deleteBoleto(id);
-                await loadBoletos(); // Sync
+                await loadBoletos();
             } catch (e) {
                 setBoletos(previousBoletos);
             }
@@ -312,22 +304,17 @@ const BoletoControl: React.FC = () => {
   const handlePay = (e: React.MouseEvent, boleto: Boleto) => {
     e.stopPropagation();
     e.preventDefault(); 
-    
     const totalAmount = (Number(boleto.amountWithInvoice) || 0) + (Number(boleto.amountWithoutInvoice) || 0);
-    
     openConfirmation(
         "Confirmar Pagamento",
         `Confirmar o pagamento para "${boleto.description}" no valor de ${formatCurrency(totalAmount)}?`,
         async () => {
             const previousBoletos = [...boletos];
-            
-            // Optimistic Update
             setBoletos(prev => prev.map(b => 
                 b.id === boleto.id 
                 ? { ...b, status: BoletoStatus.PAID, paymentDate: new Date().toISOString().split('T')[0] } 
                 : b
             ));
-
             try {
                 await payBoleto(boleto.id);
                 await loadBoletos(); 
@@ -341,15 +328,12 @@ const BoletoControl: React.FC = () => {
   const { filteredBoletos, totalFiltrado, totalComNota, totalSemNota } = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     const getLiveStatus = (boleto: Boleto): BoletoStatus => {
         if (boleto.status === BoletoStatus.PAID) return BoletoStatus.PAID;
         const dueDate = new Date(boleto.date + 'T00:00:00');
         return dueDate < today ? BoletoStatus.OVERDUE : BoletoStatus.OPEN;
     };
-
     const boletosWithLiveStatus = boletos.map(b => ({ ...b, liveStatus: getLiveStatus(b) }));
-
     const filtered = boletosWithLiveStatus.filter(b => {
         const descriptionMatch = b.description.toLowerCase().includes(filters.description.toLowerCase());
         const categoryMatch = !filters.category || b.category === filters.category;
@@ -358,13 +342,11 @@ const BoletoControl: React.FC = () => {
         if (filters.endDate && b.date > filters.endDate) dateMatch = false;
         return descriptionMatch && dateMatch && categoryMatch;
     });
-
     const totals = filtered.reduce((acc, b) => {
         acc.comNota += (Number(b.amountWithInvoice) || 0);
         acc.semNota += (Number(b.amountWithoutInvoice) || 0);
         return acc;
     }, { comNota: 0, semNota: 0 });
-    
     return { filteredBoletos: filtered, totalFiltrado: totals.comNota + totals.semNota, totalComNota: totals.comNota, totalSemNota: totals.semNota };
   }, [boletos, filters]);
 
@@ -402,18 +384,6 @@ const BoletoControl: React.FC = () => {
     'Data Pagamento': b.paymentDate || '',
   })), [sortedBoletos]);
 
-  const totalPages = Math.ceil(sortedBoletos.length / itemsPerPage);
-  const currentItems = useMemo(() => {
-      if (isPrinting) return sortedBoletos;
-      const indexOfLastItem = currentPage * itemsPerPage;
-      const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-      return sortedBoletos.slice(indexOfFirstItem, indexOfLastItem);
-  }, [sortedBoletos, currentPage, isPrinting, itemsPerPage]);
-  
-  const handleNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
-  const handlePrevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
-  const startItemIndex = (currentPage - 1) * itemsPerPage + 1;
-  const endItemIndex = Math.min(currentPage * itemsPerPage, sortedBoletos.length);
   const getSortIndicator = (key: string) => sortConfig.key === key ? <span className="ml-1 select-none">{sortConfig.direction === 'ascending' ? '▲' : '▼'}</span> : null;
 
   const handlePrint = () => {
@@ -551,7 +521,7 @@ const BoletoControl: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {currentItems.map((b) => (
+                    {sortedBoletos.map((b) => (
                         <tr key={b.id} onDoubleClick={() => handleEdit(b)} className="border-b border-slate-700 hover:bg-slate-700/50 cursor-pointer">
                             <td className="px-6 py-4 font-medium uppercase text-slate-200">{b.description}</td>
                             <td className="px-6 py-4 text-right">{formatCurrency(Number(b.amountWithInvoice) || 0)}</td>
@@ -574,34 +544,7 @@ const BoletoControl: React.FC = () => {
                 </tbody>
             </table>
           </div>
-             {currentItems.length === 0 && <p className="text-center p-10 text-slate-500">Nenhum item encontrado para os filtros selecionados.</p>}
-        </div>
-
-        <div className="flex-shrink-0 flex justify-between items-center text-sm text-slate-400 no-print">
-            <div>{sortedBoletos.length > 0 ? `Mostrando ${startItemIndex} a ${endItemIndex} de ${sortedBoletos.length} registros` : 'Nenhum registro encontrado'}</div>
-            <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                    <select
-                        id="itemsPerPageSelectBoleto"
-                        value={itemsPerPage}
-                        onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                        className="p-1 text-xs rounded bg-slate-700 border border-slate-600 focus:ring-1 focus:ring-offset-0 focus:border-transparent focus:outline-none"
-                        style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}
-                    >
-                        <option value={20}>20</option>
-                        <option value={40}>40</option>
-                        <option value={60}>60</option>
-                        <option value={80}>80</option>
-                        <option value={100}>100</option>
-                    </select>
-                    <label htmlFor="itemsPerPageSelectBoleto" className="hidden sm:inline">por página</label>
-                </div>
-                <div className="flex items-center gap-2">
-                    <button type="button" onClick={handlePrevPage} disabled={currentPage === 1} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&lt;</button>
-                    <span>{currentPage} de {totalPages > 0 ? totalPages : 1}</span>
-                    <button type="button" onClick={handleNextPage} disabled={currentPage === totalPages || totalPages === 0} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&gt;</button>
-                </div>
-            </div>
+             {sortedBoletos.length === 0 && <p className="text-center p-10 text-slate-500">Nenhum item encontrado para os filtros selecionados.</p>}
         </div>
     </div>
   );

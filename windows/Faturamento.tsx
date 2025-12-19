@@ -1,4 +1,3 @@
-
 import React, { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { FaturamentoContext } from '../contexts/FaturamentoContext';
 import { Faturamento as FaturamentoType } from '../types';
@@ -25,6 +24,10 @@ const Faturamento: React.FC = () => {
   const companyContext = useContext(CompanyContext);
   const dateInputRef = useRef<HTMLInputElement>(null);
   
+  const today = new Date();
+  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+
   const initialFormState = {
     data: new Date().toISOString().split('T')[0],
     cliente: '',
@@ -39,17 +42,14 @@ const Faturamento: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     cliente: '',
-    startDate: '',
-    endDate: '',
+    startDate: firstDayOfMonth,
+    endDate: lastDayOfMonth,
   });
 
   const [clienteSuggestions, setClienteSuggestions] = useState<string[]>([]);
   const [isClienteFocused, setIsClienteFocused] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' }>({ key: 'data', direction: 'descending' });
   const [viewMode, setViewMode] = useState<'single' | 'batch'>('single');
   const [batchData, setBatchData] = useState('');
@@ -117,7 +117,6 @@ const Faturamento: React.FC = () => {
         direction = 'descending';
     }
     setSortConfig({ key, direction });
-    setCurrentPage(1);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -170,7 +169,6 @@ const Faturamento: React.FC = () => {
       const { name, value } = e.target;
       const finalValue = name === 'cliente' ? value.toUpperCase() : value;
       setFilters(prev => ({ ...prev, [name]: finalValue }));
-      setCurrentPage(1);
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -187,7 +185,6 @@ const Faturamento: React.FC = () => {
     };
     
     if (isEditing) {
-      // Optimistic Update
       setFaturamentos(prev => prev.map(f => 
           f.id === editingId 
           ? { ...f, ...faturamentoData, id: editingId! } 
@@ -196,7 +193,6 @@ const Faturamento: React.FC = () => {
       await updateFaturamento(editingId!, faturamentoData);
     } else {
       await addFaturamento(faturamentoData);
-      // Refresh to get ID
       const data = await queryFaturamentos({ companyId: companyContext.currentCompany.id });
       setFaturamentos(data);
     }
@@ -208,7 +204,6 @@ const Faturamento: React.FC = () => {
   
   const handleProcessBatch = async () => {
     setIsProcessing(true);
-    // Batch processing logic... (Simplified for brevity, assume same logic as before)
     const lines = batchData.split('\n').filter(line => line.trim() !== '');
     if (lines.length === 0) { winManager.addNotification({ title: 'Aviso', message: 'Nenhum dado.', type: 'warning' }); setIsProcessing(false); return; }
 
@@ -332,19 +327,6 @@ const Faturamento: React.FC = () => {
     return filteredFaturamentos.reduce((acc, f) => acc + (Number(f.valor) || 0), 0);
   }, [filteredFaturamentos]);
 
-  const totalPages = Math.ceil(sortedFaturamentos.length / itemsPerPage);
-  const currentItems = useMemo(() => {
-    if (isPrinting) return sortedFaturamentos;
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    return sortedFaturamentos.slice(indexOfFirstItem, indexOfLastItem);
-  }, [sortedFaturamentos, currentPage, isPrinting, itemsPerPage]);
-
-  const startItemIndex = (currentPage - 1) * itemsPerPage + 1;
-  const endItemIndex = Math.min(currentPage * itemsPerPage, sortedFaturamentos.length);
-  
-  const handleNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
-  const handlePrevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
   const getSortIndicator = (key: string) => sortConfig.key === key ? <span className="ml-1 select-none">{sortConfig.direction === 'ascending' ? '▲' : '▼'}</span> : null;
 
   const handlePrint = () => {
@@ -473,7 +455,7 @@ const Faturamento: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {currentItems.map((f: FaturamentoType) => (
+                {sortedFaturamentos.map((f: FaturamentoType) => (
                   <tr key={f.id} onDoubleClick={() => handleEdit(f)} className="border-b border-slate-700 hover:bg-slate-700/50 cursor-pointer">
                     <td className="px-4 py-2">{formatDateForDisplay(f.data)}</td>
                     <td className="px-4 py-2 font-medium uppercase text-slate-200 truncate" style={{maxWidth: '200px'}}>{f.cliente}</td>
@@ -493,34 +475,7 @@ const Faturamento: React.FC = () => {
               </tbody>
             </table>
           </div>
-          {currentItems.length === 0 && <p className="text-center p-10 text-slate-500">Nenhum faturamento encontrado.</p>}
-        </div>
-
-        <div className="flex-shrink-0 p-2 border-t border-slate-700 flex justify-between items-center text-sm text-slate-400 no-print">
-            <div>{sortedFaturamentos.length > 0 ? `Mostrando ${startItemIndex} a ${endItemIndex} de ${sortedFaturamentos.length} registros` : 'Nenhum registro encontrado'}</div>
-            <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                    <select
-                        id="itemsPerPageSelectF"
-                        value={itemsPerPage}
-                        onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                        className="p-1 text-xs rounded bg-slate-700 border border-slate-600 focus:ring-1 focus:ring-offset-0 focus:border-transparent focus:outline-none"
-                        style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}
-                    >
-                        <option value={20}>20</option>
-                        <option value={40}>40</option>
-                        <option value={60}>60</option>
-                        <option value={80}>80</option>
-                        <option value={100}>100</option>
-                    </select>
-                    <label htmlFor="itemsPerPageSelectF" className="hidden sm:inline">por página</label>
-                </div>
-                <div className="flex items-center gap-2">
-                <button onClick={handlePrevPage} disabled={currentPage === 1} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&lt;</button>
-                <span>{currentPage} de {totalPages > 0 ? totalPages : 1}</span>
-                <button onClick={handleNextPage} disabled={currentPage === totalPages || totalPages === 0} className="px-3 py-1 bg-slate-700 rounded disabled:opacity-50">&gt;</button>
-                </div>
-            </div>
+          {sortedFaturamentos.length === 0 && <p className="text-center p-10 text-slate-500">Nenhum faturamento encontrado.</p>}
         </div>
       </div>
     </div>

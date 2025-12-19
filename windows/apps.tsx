@@ -33,7 +33,7 @@ import {
   ChangePasswordIcon,
   CalculatorIcon,
   DashboardGeralIcon,
-  ForecastIcon,
+  ForecastIcon
 } from '../components/icons/AppIcons';
 
 export const APPS: AppDefinition[] = [
