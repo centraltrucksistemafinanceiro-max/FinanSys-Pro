@@ -55,27 +55,30 @@
             size: a4 portrait;
         }
 
-        /* 1. RESET TOTAL DO SISTEMA DE JANELAS */
+        /* 1. RESET E FLUXO DE DOCUMENTO */
         html, body, #root, .App, [class*="h-screen"], [class*="w-screen"] {
             height: auto !important;
-            width: 100% !important;
+            width: 21cm !important; /* Largura exata do A4 */
             overflow: visible !important;
             position: static !important;
             background: white !important;
+            color: black !important;
             margin: 0 !important;
             padding: 0 !important;
         }
 
-        /* 2. ESCONDER ELEMENTOS DE UI */
+        /* 2. ESCONDER INTERFACE DO SISTEMA */
         .taskbar, header, .window-controls, .no-print, button, 
         .resize-handle, .desktop-icons, .desktop-wallpaper, 
-        .absolute.inset-0, .backdrop-blur-md, .backdrop-blur-xl,
-        .fixed, .absolute {
+        .absolute.inset-0, .backdrop-blur-md, .bg-black\/10, .bg-black\/20 {
             display: none !important;
         }
 
-        /* 3. TRANSFORMAR A JANELA EM CONTEÚDO PLANO (IMPORTANTE) */
-        .window-frame {
+        /* 3. DESATIVAR TRANSFORMADAS DA JANELA (RND) */
+        .window-frame, 
+        div[class*="react-draggable"],
+        div[style*="position: absolute"],
+        div[style*="z-index"] {
             position: static !important;
             transform: none !important;
             width: 100% !important;
@@ -101,49 +104,45 @@
             color: black !important;
             padding: 0 !important;
             display: block !important;
-            width: 100% !important;
+            width: 19cm !important; /* Largura segura com margem */
+            margin: 0 auto !important;
         }
 
-        /* 4. FIX PARA GRÁFICOS RECHARTS (PREVENIR CORTE) */
+        /* 4. FIX DEFINITIVO PARA RECHARTS NO PDF */
         .chart-container {
-            width: 18cm !important; /* Largura segura para A4 */
-            height: 350px !important;
-            margin: 0 auto 20px auto !important;
+            width: 19cm !important; 
+            height: 300px !important; /* Altura fixa ajuda a renderizar no PDF */
+            display: block !important;
             overflow: visible !important;
-            position: relative !important;
+            page-break-inside: avoid !important;
+            margin: 10px 0 !important;
         }
         
+        /* Força o Recharts a ocupar todo o container de 19cm */
         .recharts-responsive-container {
             width: 100% !important;
             height: 100% !important;
-            min-width: 100% !important;
+            min-width: 19cm !important;
             display: block !important;
         }
 
-        .recharts-surface {
-            width: 100% !important;
-            height: 100% !important;
-        }
-        
-        .recharts-wrapper {
+        .recharts-surface, .recharts-wrapper {
             width: 100% !important;
             height: 100% !important;
         }
 
-        /* 5. AJUSTES DE TABELAS E TEXTOS */
-        .bg-slate-900, .bg-slate-800, .bg-slate-700 {
-            background-color: transparent !important;
-            color: black !important;
+        svg {
+            width: 100% !important;
+            height: auto !important;
         }
 
+        /* 5. AJUSTES DE TABELAS */
         table {
             border: 1px solid #000 !important;
             border-collapse: collapse !important;
             width: 100% !important;
-            page-break-inside: auto !important;
+            margin-bottom: 20px !important;
         }
-        
-        tr { page-break-inside: avoid !important; }
         
         th, td {
             border: 1px solid #000 !important;
@@ -152,9 +151,19 @@
             font-size: 9pt !important;
         }
 
-        .text-green-400, .text-green-300 { color: #15803d !important; font-weight: bold !important; }
-        .text-red-400, .text-red-300, .text-red-500 { color: #b91c1c !important; font-weight: bold !important; }
-        .text-slate-300, .text-slate-400 { color: #334155 !important; }
+        .grid {
+            display: block !important;
+        }
+
+        section {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            margin-bottom: 30px !important;
+            width: 100% !important;
+        }
+
+        .text-green-400 { color: #008000 !important; font-weight: bold !important; }
+        .text-red-400 { color: #ff0000 !important; font-weight: bold !important; }
       }
     </style>
   <script type="importmap">
