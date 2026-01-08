@@ -123,180 +123,180 @@ const FinancialForecast: React.FC = () => {
     const saldoTotal = totalFaturamento - totalDespesa;
     
     const TableHeader = ({ title }: { title: string }) => (
-        <div className="bg-slate-700 p-2 text-center font-bold text-lg rounded-t-md">
+        <div className="bg-slate-700 p-2 text-center font-bold text-lg rounded-t-md print:bg-slate-100 print:text-black print:border print:border-b-0">
             {title}
         </div>
     );
 
     return (
-        <div className="p-4 bg-slate-900 h-full overflow-y-auto text-slate-200 font-sans printable-dashboard">
-            <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
-                <h1 className="text-2xl font-bold">Resumo Financeiro</h1>
-                <div className="flex items-center gap-4 no-print flex-wrap">
-                    <div className="flex items-center gap-2">
-                        <label className="text-sm font-medium">De:</label>
-                        <input 
-                            type="month" 
-                            value={rangeStart} 
-                            onChange={(e) => setRangeStart(e.target.value)} 
-                            className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none text-white"
-                            style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}
-                        />
+        <div className="bg-slate-900 min-h-full overflow-y-auto text-slate-200 font-sans printable-dashboard">
+            <div className="p-4 md:p-6">
+                <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
+                    <h1 className="text-2xl font-bold">Resumo Financeiro</h1>
+                    <div className="flex items-center gap-4 no-print flex-wrap">
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm font-medium text-slate-400">De:</label>
+                            <input 
+                                type="month" 
+                                value={rangeStart} 
+                                onChange={(e) => setRangeStart(e.target.value)} 
+                                className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none text-white"
+                                style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm font-medium text-slate-400">Até:</label>
+                            <input 
+                                type="month" 
+                                value={rangeEnd} 
+                                onChange={(e) => setRangeEnd(e.target.value)} 
+                                className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none text-white"
+                                style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}
+                            />
+                        </div>
+                        <button
+                            onClick={() => window.print()}
+                            className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-md transition-colors text-sm font-bold shadow-md border border-slate-600"
+                        >
+                            <PrinterIcon className="w-5 h-5" />
+                            <span>Exportar PDF</span>
+                        </button>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <label className="text-sm font-medium">Até:</label>
-                        <input 
-                            type="month" 
-                            value={rangeEnd} 
-                            onChange={(e) => setRangeEnd(e.target.value)} 
-                            className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none text-white"
-                            style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}
-                        />
-                    </div>
-                    <button
-                        onClick={() => window.print()}
-                        className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-md transition-colors text-sm font-bold shadow-md"
-                        title="Exportar Relatório como PDF"
-                    >
-                        <PrinterIcon className="w-5 h-5" />
-                        <span className="hidden sm:inline">Exportar PDF</span>
-                    </button>
                 </div>
-            </div>
 
-            <div className="bg-slate-800 p-4 rounded-lg shadow-lg mb-6">
-                <h2 className="font-bold mb-4 text-slate-300">Projeção Faturamento vs. Despesa</h2>
-                <ResponsiveContainer width="100%" height={300}>
-                    <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 30, bottom: 5 }}>
-                        <defs>
-                            <linearGradient id="colorFaturamento" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
-                            <linearGradient id="colorDespesa" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/><stop offset="95%" stopColor="#ef4444" stopOpacity={0}/></linearGradient>
-                        </defs>
-                        <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
-                        <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(value) => formatCurrency(Number(value))} />
-                        <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Legend wrapperStyle={{fontSize: "12px"}} />
-                        <Area type="monotone" dataKey="Faturamento" stroke="#10b981" fillOpacity={1} fill="url(#colorFaturamento)" />
-                        <Area type="monotone" dataKey="Despesa" stroke="#ef4444" fillOpacity={1} fill="url(#colorDespesa)" />
-                    </AreaChart>
-                </ResponsiveContainer>
-            </div>
+                <div className="bg-slate-800 p-4 rounded-lg shadow-lg mb-6 border border-slate-700/50 print:border print:border-slate-200">
+                    <h2 className="font-bold mb-4 text-slate-300 print:text-black">Projeção Faturamento vs. Despesa</h2>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 30, bottom: 5 }}>
+                            <defs>
+                                <linearGradient id="colorFaturamento" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+                                <linearGradient id="colorDespesa" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/><stop offset="95%" stopColor="#ef4444" stopOpacity={0}/></linearGradient>
+                            </defs>
+                            <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
+                            <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(value) => formatCurrency(Number(value))} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend wrapperStyle={{fontSize: "12px"}} />
+                            <Area type="monotone" dataKey="Faturamento" stroke="#10b981" fillOpacity={1} fill="url(#colorFaturamento)" />
+                            <Area type="monotone" dataKey="Despesa" stroke="#ef4444" fillOpacity={1} fill="url(#colorDespesa)" />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </div>
 
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div className="bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200">
+                        <TableHeader title="DESPESA OFICINA" />
+                        <table className="w-full text-sm">
+                            <thead className="bg-slate-700/50 print:bg-slate-50">
+                                <tr>
+                                    <th className="px-4 py-2 text-left">MÊS</th>
+                                    <th className="px-4 py-2 text-right">COM</th>
+                                    <th className="px-4 py-2 text-right">SEM</th>
+                                    <th className="px-4 py-2 text-right">TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {monthlyData.map((data, index) => (
+                                    <tr key={index} className="border-b border-slate-700 print:border-slate-200">
+                                        <td className="px-4 py-2 font-semibold">{data.month}</td>
+                                        <td className="px-4 py-2 text-right">{formatCurrency(data.despesaCom)}</td>
+                                        <td className="px-4 py-2 text-right">{formatCurrency(data.despesaSem)}</td>
+                                        <td className="px-4 py-2 text-right font-bold">{formatCurrency(data.totalDespesa)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                            <tfoot>
+                                <tr className="bg-slate-700/50 font-bold print:bg-slate-50">
+                                    <td className="px-4 py-2 text-left">TOTAL</td>
+                                    <td className="px-4 py-2 text-right">{formatCurrency(totalDespesaCom)}</td>
+                                    <td className="px-4 py-2 text-right">{formatCurrency(totalDespesaSem)}</td>
+                                    <td className="px-4 py-2 text-right">{formatCurrency(totalDespesa)}</td>
+                                </tr>
+                                <tr className="bg-slate-700/50 font-bold print:bg-slate-50">
+                                    <td className="px-4 py-2 text-left">MÉDIA</td>
+                                    <td className="px-4 py-2 text-right">{formatCurrency(mediaDespesaCom)}</td>
+                                    <td className="px-4 py-2 text-right">{formatCurrency(mediaDespesaSem)}</td>
+                                    <td className="px-4 py-2 text-right text-red-400">{formatCurrency(mediaDespesaTotal)}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-slate-800 rounded-md shadow-lg">
-                    <TableHeader title="DESPESA OFICINA" />
-                    <table className="w-full text-sm">
-                        <thead className="bg-slate-700/50">
+                    <div className="bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200">
+                        <TableHeader title="FATURAMENTO OFICINA" />
+                        <table className="w-full text-sm">
+                            <thead className="bg-slate-700/50 print:bg-slate-50">
+                                <tr>
+                                    <th className="px-4 py-2 text-left">MÊS</th>
+                                    <th className="px-4 py-2 text-right">COM</th>
+                                    <th className="px-4 py-2 text-right">SEM</th>
+                                    <th className="px-4 py-2 text-right">TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {monthlyData.map((data, index) => (
+                                    <tr key={index} className="border-b border-slate-700 print:border-slate-200">
+                                        <td className="px-4 py-2 font-semibold">{data.month}</td>
+                                        <td className="px-4 py-2 text-right">{formatCurrency(data.faturamentoCom)}</td>
+                                        <td className="px-4 py-2 text-right">{formatCurrency(data.faturamentoSem)}</td>
+                                        <td className="px-4 py-2 text-right font-bold">{formatCurrency(data.totalFaturamento)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                            <tfoot>
+                                <tr className="bg-slate-700/50 font-bold print:bg-slate-50">
+                                    <td className="px-4 py-2 text-left">TOTAL</td>
+                                    <td className="px-4 py-2 text-right">{formatCurrency(totalFaturamentoCom)}</td>
+                                    <td className="px-4 py-2 text-right">{formatCurrency(totalFaturamentoSem)}</td>
+                                    <td className="px-4 py-2 text-right text-green-400">{formatCurrency(totalFaturamento)}</td>
+                                </tr>
+                                 <tr className="bg-slate-700/50 font-bold print:bg-slate-50">
+                                    <td className="px-4 py-2 text-left">MÉDIA</td>
+                                    <td className="px-4 py-2 text-right">{formatCurrency(mediaFaturamentoCom)}</td>
+                                    <td className="px-4 py-2 text-right">{formatCurrency(mediaFaturamentoSem)}</td>
+                                    <td className="px-4 py-2 text-right text-green-400">{formatCurrency(mediaFaturamentoTotal)}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                
+                <div className="mt-6 bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200">
+                     <TableHeader title="OFICINA" />
+                     <table className="w-full text-sm">
+                        <thead className="bg-slate-700/50 print:bg-slate-50">
                             <tr>
                                 <th className="px-4 py-2 text-left">MÊS</th>
-                                <th className="px-4 py-2 text-right">COM</th>
-                                <th className="px-4 py-2 text-right">SEM</th>
+                                <th className="px-4 py-2 text-right">TOTAL DESPESA</th>
+                                <th className="px-4 py-2 text-right">TOTAL FATURAMENTO</th>
                                 <th className="px-4 py-2 text-right">TOTAL</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {monthlyData.map((data, index) => (
-                                <tr key={index} className="border-b border-slate-700">
-                                    <td className="px-4 py-2 font-semibold">{data.month}</td>
-                                    <td className="px-4 py-2 text-right">{formatCurrency(data.despesaCom)}</td>
-                                    <td className="px-4 py-2 text-right">{formatCurrency(data.despesaSem)}</td>
-                                    <td className="px-4 py-2 text-right font-bold">{formatCurrency(data.totalDespesa)}</td>
-                                </tr>
-                            ))}
+                            {monthlyData.map((data, index) => {
+                                const totalMes = data.totalFaturamento - data.totalDespesa;
+                                return (
+                                    <tr key={index} className="border-b border-slate-700 print:border-slate-200">
+                                        <td className="px-4 py-2 font-semibold">{data.month}</td>
+                                        <td className="px-4 py-2 text-right">{formatCurrency(data.totalDespesa)}</td>
+                                        <td className="px-4 py-2 text-right">{formatCurrency(data.totalFaturamento)}</td>
+                                        <td className={`px-4 py-2 text-right font-bold ${totalMes < 0 ? 'text-red-400' : 'text-green-400'}`}>
+                                            {formatCurrency(totalMes)}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
-                        <tfoot>
-                            <tr className="bg-slate-700/50 font-bold">
-                                <td className="px-4 py-2 text-left">TOTAL</td>
-                                <td className="px-4 py-2 text-right">{formatCurrency(totalDespesaCom)}</td>
-                                <td className="px-4 py-2 text-right">{formatCurrency(totalDespesaSem)}</td>
-                                <td className="px-4 py-2 text-right">{formatCurrency(totalDespesa)}</td>
-                            </tr>
-                            <tr className="bg-slate-700/50 font-bold">
-                                <td className="px-4 py-2 text-left">MÉDIA</td>
-                                <td className="px-4 py-2 text-right">{formatCurrency(mediaDespesaCom)}</td>
-                                <td className="px-4 py-2 text-right">{formatCurrency(mediaDespesaSem)}</td>
-                                <td className="px-4 py-2 text-right text-red-400">{formatCurrency(mediaDespesaTotal)}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
+                     </table>
                 </div>
 
-                <div className="bg-slate-800 rounded-md shadow-lg">
-                    <TableHeader title="FATURAMENTO OFICINA" />
-                    <table className="w-full text-sm">
-                        <thead className="bg-slate-700/50">
-                            <tr>
-                                <th className="px-4 py-2 text-left">MÊS</th>
-                                <th className="px-4 py-2 text-right">COM</th>
-                                <th className="px-4 py-2 text-right">SEM</th>
-                                <th className="px-4 py-2 text-right">TOTAL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {monthlyData.map((data, index) => (
-                                <tr key={index} className="border-b border-slate-700">
-                                    <td className="px-4 py-2 font-semibold">{data.month}</td>
-                                    <td className="px-4 py-2 text-right">{formatCurrency(data.faturamentoCom)}</td>
-                                    <td className="px-4 py-2 text-right">{formatCurrency(data.faturamentoSem)}</td>
-                                    <td className="px-4 py-2 text-right font-bold">{formatCurrency(data.totalFaturamento)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                        <tfoot>
-                            <tr className="bg-slate-700/50 font-bold">
-                                <td className="px-4 py-2 text-left">TOTAL</td>
-                                <td className="px-4 py-2 text-right">{formatCurrency(totalFaturamentoCom)}</td>
-                                <td className="px-4 py-2 text-right">{formatCurrency(totalFaturamentoSem)}</td>
-                                <td className="px-4 py-2 text-right text-green-400">{formatCurrency(totalFaturamento)}</td>
-                            </tr>
-                             <tr className="bg-slate-700/50 font-bold">
-                                <td className="px-4 py-2 text-left">MÉDIA</td>
-                                <td className="px-4 py-2 text-right">{formatCurrency(mediaFaturamentoCom)}</td>
-                                <td className="px-4 py-2 text-right">{formatCurrency(mediaFaturamentoSem)}</td>
-                                <td className="px-4 py-2 text-right text-green-400">{formatCurrency(mediaFaturamentoTotal)}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-            
-            <div className="mt-6 bg-slate-800 rounded-md shadow-lg">
-                 <TableHeader title="OFICINA" />
-                 <table className="w-full text-sm">
-                    <thead className="bg-slate-700/50">
-                        <tr>
-                            <th className="px-4 py-2 text-left">MÊS</th>
-                            <th className="px-4 py-2 text-right">TOTAL DESPESA</th>
-                            <th className="px-4 py-2 text-right">TOTAL FATURAMENTO</th>
-                            <th className="px-4 py-2 text-right">TOTAL</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {monthlyData.map((data, index) => {
-                            const totalMes = data.totalFaturamento - data.totalDespesa;
-                            return (
-                                <tr key={index} className="border-b border-slate-700">
-                                    <td className="px-4 py-2 font-semibold">{data.month}</td>
-                                    <td className="px-4 py-2 text-right">{formatCurrency(data.totalDespesa)}</td>
-                                    <td className="px-4 py-2 text-right">{formatCurrency(data.totalFaturamento)}</td>
-                                    <td className={`px-4 py-2 text-right font-bold ${totalMes < 0 ? 'text-red-400' : 'text-green-400'}`}>
-                                        {formatCurrency(totalMes)}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                 </table>
-            </div>
-
-            <div className="mt-6 flex justify-end">
-                <div className="bg-slate-800 p-4 rounded-md shadow-lg flex items-center gap-4">
-                    <span className="font-bold text-lg">SALDO</span>
-                    <span className={`text-2xl font-bold ${saldoTotal >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {formatCurrency(saldoTotal)}
-                    </span>
+                <div className="mt-6 flex justify-end">
+                    <div className="bg-slate-800 p-4 rounded-md shadow-xl flex items-center gap-4 border border-slate-700/50 print:border print:border-slate-300">
+                        <span className="font-bold text-lg print:text-black">SALDO</span>
+                        <span className={`text-2xl font-bold ${saldoTotal >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {formatCurrency(saldoTotal)}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
