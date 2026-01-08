@@ -51,7 +51,7 @@
 
       @media print {
         @page {
-            margin: 1cm;
+            margin: 1.5cm;
             size: a4 portrait;
         }
 
@@ -71,7 +71,7 @@
         /* 2. ESCONDER INTERFACE DO SISTEMA */
         .taskbar, header, .window-controls, .no-print, button, 
         .resize-handle, .desktop-icons, .desktop-wallpaper, 
-        .absolute.inset-0, .backdrop-blur-md {
+        .absolute.inset-0, .backdrop-blur-md, .bg-black\/10, .bg-black\/20 {
             display: none !important;
             visibility: hidden !important;
         }
@@ -107,25 +107,38 @@
             padding: 0 !important;
             display: block !important;
             width: 100% !important;
+            box-sizing: border-box !important;
         }
 
-        /* Fix para Gráficos Recharts na Impressão */
+        /* FIX CRÍTICO PARA GRÁFICOS RECHARTS NA IMPRESSÃO */
         .chart-container {
             width: 100% !important;
-            height: 350px !important;
-            overflow: visible !important;
+            height: 320px !important;
+            overflow: hidden !important;
             page-break-inside: avoid !important;
+            margin-bottom: 25px !important;
+            background: white !important;
         }
         
+        /* Força a biblioteca a respeitar o tamanho do papel */
         .recharts-responsive-container {
             width: 100% !important;
-            height: 350px !important;
-            min-width: 100% !important;
+            height: 100% !important;
+            min-width: 0 !important;
+            min-height: 0 !important;
+            display: block !important;
+        }
+
+        /* Reseta a largura inline injetada via JS no SVG */
+        .recharts-responsive-container svg {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
         }
 
         .recharts-surface {
             width: 100% !important;
-            height: auto !important;
+            height: 100% !important;
         }
 
         /* 5. AJUSTES DE ELEMENTOS VISUAIS PARA O PDF */
@@ -139,14 +152,15 @@
             border: 1px solid #000 !important;
             border-collapse: collapse !important;
             width: 100% !important;
-            margin-bottom: 25px !important;
+            margin-bottom: 20px !important;
+            table-layout: auto !important;
         }
         
         th, td {
             border: 1px solid #000 !important;
-            padding: 5px 8px !important;
+            padding: 4px 6px !important;
             color: #000 !important;
-            font-size: 10pt !important;
+            font-size: 8.5pt !important;
             background: white !important;
         }
 
@@ -157,11 +171,13 @@
         section {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
-            margin-bottom: 20px !important;
+            margin-bottom: 25px !important;
         }
 
-        .text-green-400 { color: #008000 !important; font-weight: bold !important; }
-        .text-red-400 { color: #ff0000 !important; font-weight: bold !important; }
+        /* Ajuste de contraste para impressão */
+        .text-green-400 { color: #15803d !important; font-weight: bold !important; }
+        .text-red-400 { color: #b91c1c !important; font-weight: bold !important; }
+        .text-slate-300, .text-slate-400, .text-slate-500 { color: #334155 !important; }
       }
     </style>
   <script type="importmap">
