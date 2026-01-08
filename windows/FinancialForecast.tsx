@@ -129,7 +129,7 @@ const FinancialForecast: React.FC = () => {
     );
 
     return (
-        <div className="bg-slate-900 min-h-full overflow-y-auto text-slate-200 font-sans printable-dashboard">
+        <div className="bg-slate-900 text-slate-200 font-sans printable-dashboard">
             <div className="p-4 md:p-6">
                 <div className="flex flex-wrap items-center justify-between mb-6 gap-4 no-print">
                     <h1 className="text-2xl font-bold text-white">Resumo Financeiro</h1>
@@ -166,13 +166,13 @@ const FinancialForecast: React.FC = () => {
 
                 <div className="hidden print:block mb-8">
                     <h1 className="text-3xl font-bold text-black border-b-2 border-slate-200 pb-2">Relatório de Projeção Financeira</h1>
-                    <p className="text-slate-600 mt-1">Período: {rangeStart} até {rangeEnd}</p>
+                    <p className="text-slate-600 mt-2">Período: {rangeStart} até {rangeEnd}</p>
                     <p className="text-slate-600">Empresa: {companyContext.currentCompany.name}</p>
                 </div>
 
                 <div className="bg-slate-800 p-4 rounded-lg shadow-lg mb-6 border border-slate-700/50 print:border print:border-slate-200 print:shadow-none">
-                    <h2 className="font-bold mb-4 text-slate-300 print:text-black">Projeção Faturamento vs. Despesa</h2>
-                    <div className="h-[300px] w-full">
+                    <h2 className="font-bold mb-4 text-slate-300 print:text-black uppercase text-xs tracking-widest">Gráfico de Projeção</h2>
+                    <div className="h-[350px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 30, bottom: 5 }}>
                                 <defs>
@@ -192,7 +192,7 @@ const FinancialForecast: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    <div className="bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200 print:shadow-none print:break-inside-avoid">
+                    <div className="bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200 print:shadow-none">
                         <TableHeader title="DESPESA OFICINA" />
                         <table className="w-full text-sm">
                             <thead className="bg-slate-700/50 print:bg-slate-50">
@@ -230,7 +230,7 @@ const FinancialForecast: React.FC = () => {
                         </table>
                     </div>
 
-                    <div className="bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200 print:shadow-none print:break-inside-avoid">
+                    <div className="bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200 print:shadow-none">
                         <TableHeader title="FATURAMENTO OFICINA" />
                         <table className="w-full text-sm">
                             <thead className="bg-slate-700/50 print:bg-slate-50">
@@ -270,14 +270,14 @@ const FinancialForecast: React.FC = () => {
                 </div>
                 
                 <div className="mt-6 bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200 print:shadow-none">
-                     <TableHeader title="OFICINA" />
+                     <TableHeader title="DETALHAMENTO OFICINA" />
                      <table className="w-full text-sm">
                         <thead className="bg-slate-700/50 print:bg-slate-50">
                             <tr>
                                 <th className="px-4 py-2 text-left">MÊS</th>
                                 <th className="px-4 py-2 text-right">TOTAL DESPESA</th>
                                 <th className="px-4 py-2 text-right">TOTAL FATURAMENTO</th>
-                                <th className="px-4 py-2 text-right">TOTAL</th>
+                                <th className="px-4 py-2 text-right">SALDO LÍQUIDO</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -299,12 +299,16 @@ const FinancialForecast: React.FC = () => {
                 </div>
 
                 <div className="mt-6 flex justify-end">
-                    <div className="bg-slate-800 p-4 rounded-md shadow-xl flex items-center gap-4 border border-slate-700/50 print:border print:border-slate-300 print:shadow-none">
-                        <span className="font-bold text-lg print:text-black">SALDO GERAL ACUMULADO</span>
-                        <span className={`text-2xl font-bold ${saldoTotal >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    <div className="bg-slate-800 p-6 rounded-md shadow-xl flex flex-col items-end gap-2 border border-slate-700/50 print:border print:border-slate-300 print:shadow-none">
+                        <span className="font-bold text-xs text-slate-400 print:text-slate-600 uppercase tracking-widest">Saldo Geral Acumulado no Período</span>
+                        <span className={`text-3xl font-bold ${saldoTotal >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                             {formatCurrency(saldoTotal)}
                         </span>
                     </div>
+                </div>
+                
+                <div className="hidden print:block mt-12 pt-8 border-t border-slate-200 text-center text-xs text-slate-400">
+                    <p>Relatório gerado automaticamente pelo sistema FinanSys Pro v3.0 em {new Date().toLocaleString()}</p>
                 </div>
             </div>
         </div>
