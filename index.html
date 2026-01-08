@@ -51,29 +51,32 @@
 
       @media print {
         @page {
-            margin: 0.8cm;
-            size: auto;
+            margin: 1.5cm;
+            size: a4 portrait;
         }
 
-        /* RESET GERAL DE IMPRESSÃO */
-        html, body, #root, .App {
+        /* 1. RESET RADICAL: Remove tudo que trava a altura da página */
+        html, body, #root, .App, [class*="h-screen"], [class*="w-screen"] {
             height: auto !important;
+            min-height: 0 !important;
+            width: 100% !important;
             overflow: visible !important;
+            position: static !important;
             background: white !important;
             color: black !important;
-            display: block !important;
-            width: 100% !important;
-            position: static !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
-        /* REMOVER LIXO VISUAL */
+        /* 2. ESCONDER INTERFACE DO SISTEMA */
         .taskbar, header, .window-controls, .no-print, button, 
         .resize-handle, .desktop-icons, .desktop-wallpaper, 
-        .absolute.inset-0, .backdrop-blur-md, .shadow-2xl {
+        .absolute.inset-0, .backdrop-blur-md {
             display: none !important;
+            visibility: hidden !important;
         }
 
-        /* DESCONSTRUÇÃO DO SISTEMA DE JANELAS */
+        /* 3. DESMANTELAR O SISTEMA DE JANELAS (RND) */
         .window-frame, 
         div[class*="react-draggable"],
         div[style*="position: absolute"],
@@ -90,74 +93,59 @@
             overflow: visible !important;
         }
 
+        /* 4. FORÇAR CONTEÚDO A OCUPAR O PAPEL TODO */
         main, .overflow-auto, .overflow-y-auto {
             overflow: visible !important;
             height: auto !important;
             max-height: none !important;
             display: block !important;
-            width: 100% !important;
         }
 
         .printable-dashboard {
             background-color: white !important;
             color: black !important;
-            width: 100% !important;
+            padding: 0 !important;
             display: block !important;
+            width: 100% !important;
         }
 
-        /* CONFIGURAÇÃO DAS TABELAS */
+        /* 5. AJUSTES DE ELEMENTOS VISUAIS PARA O PDF */
+        .bg-slate-900, .bg-slate-800, .bg-slate-700 {
+            background-color: transparent !important;
+            color: black !important;
+            border: none !important;
+        }
+
+        /* Força tabelas a ocuparem 100% da largura e terem bordas pretas finas */
         table {
             border: 1px solid #000 !important;
             border-collapse: collapse !important;
             width: 100% !important;
-            margin-bottom: 20px !important;
-            page-break-inside: auto;
+            margin-bottom: 25px !important;
         }
         
-        tr {
-            page-break-inside: avoid !important;
-            page-break-after: auto;
-        }
-
         th, td {
             border: 1px solid #000 !important;
-            padding: 4px 6px !important;
-            font-size: 8.5pt !important;
-            color: black !important;
+            padding: 5px 8px !important;
+            color: #000 !important;
+            font-size: 10pt !important;
+            background: white !important;
         }
 
-        /* LAYOUT PADRÃO (RETRATO / PORTRAIT) */
-        .grid-to-stack {
+        /* Empilha grids lateralmente para caber na largura do A4 */
+        .grid {
             display: block !important;
         }
 
-        /* DETECÇÃO AUTOMÁTICA DE PAISAGEM (LANDSCAPE) */
-        @media (orientation: landscape) {
-            .grid-to-stack {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                gap: 15px !important;
-            }
-        }
-
-        /* AJUSTE DO GRÁFICO PARA NÃO CORTAR DEZEMBRO */
-        .chart-container {
-            width: 100% !important;
-            height: 380px !important;
+        /* 6. REGRAS DE QUEBRA DE PÁGINA */
+        section, .bg-slate-800, table, .chart-container {
             page-break-inside: avoid !important;
-            margin-bottom: 30px !important;
-            display: block !important;
+            break-inside: avoid !important;
+            margin-bottom: 20px !important;
         }
 
-        .recharts-responsive-container {
-            width: 100% !important;
-            height: 100% !important;
-            min-width: 700px !important;
-        }
-
-        .text-green-400 { color: #059669 !important; font-weight: bold !important; }
-        .text-red-400 { color: #dc2626 !important; font-weight: bold !important; }
-        .text-slate-400, .text-slate-500 { color: #4b5563 !important; }
+        .text-green-400 { color: #008000 !important; font-weight: bold !important; }
+        .text-red-400 { color: #ff0000 !important; font-weight: bold !important; }
       }
     </style>
   <script type="importmap">
