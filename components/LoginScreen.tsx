@@ -68,7 +68,7 @@ const LoginScreen: React.FC = () => {
       <div className="relative w-full max-w-sm p-8 space-y-6 bg-slate-200/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-xl shadow-2xl border border-white/20">
         <div className="text-center">
           <Logo className="w-56 h-56 object-contain mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 tracking-tight" style={{ color: settings.accentColor }}>
+          <h1 className="text-3xl font-bold tracking-tight" style={{ color: '#3b82f6' }}>
             FinanSys Pro
           </h1>
           <p className="text-slate-600 dark:text-slate-300 text-sm font-medium mt-1">Gestão Financeira Avançada</p>
