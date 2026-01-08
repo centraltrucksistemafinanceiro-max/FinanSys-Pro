@@ -36,7 +36,6 @@ const FinancialForecast: React.FC = () => {
     const currentYear = new Date().getFullYear();
     const [rangeStart, setRangeStart] = useState(`${currentYear}-01`);
     const [rangeEnd, setRangeEnd] = useState(`${currentYear}-12`);
-    const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait');
     const [monthlyData, setMonthlyData] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -45,6 +44,7 @@ const FinancialForecast: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
+            
             const { id: companyId } = companyContext.currentCompany;
             
             const [boletos, faturamentos, faturamentosSN] = await Promise.all([
@@ -106,8 +106,16 @@ const FinancialForecast: React.FC = () => {
         }));
     }, [monthlyData]);
     
-    const totalDespesa = monthlyData.reduce((acc, curr) => acc + curr.totalDespesa, 0);
-    const totalFaturamento = monthlyData.reduce((acc, curr) => acc + curr.totalFaturamento, 0);
+    const totalDespesaCom = monthlyData.reduce((acc, curr) => acc + curr.despesaCom, 0);
+    const totalDespesaSem = monthlyData.reduce((acc, curr) => acc + curr.despesaSem, 0);
+    const totalDespesa = totalDespesaCom + totalDespesaSem;
+    const mediaDespesaTotal = monthlyData.length > 0 ? totalDespesa / monthlyData.length : 0;
+
+    const totalFaturamentoCom = monthlyData.reduce((acc, curr) => acc + curr.faturamentoCom, 0);
+    const totalFaturamentoSem = monthlyData.reduce((acc, curr) => acc + curr.faturamentoSem, 0);
+    const totalFaturamento = totalFaturamentoCom + totalFaturamentoSem;
+    const mediaFaturamentoTotal = monthlyData.length > 0 ? totalFaturamento / monthlyData.length : 0;
+    
     const saldoTotal = totalFaturamento - totalDespesa;
     
     const TableHeader = ({ title }: { title: string }) => (
@@ -117,61 +125,42 @@ const FinancialForecast: React.FC = () => {
     );
 
     return (
-        <div className={`bg-slate-900 text-slate-200 font-sans printable-dashboard ${orientation === 'landscape' ? 'print-landscape' : 'print-portrait'}`}>
+        <div className="bg-slate-900 text-slate-200 font-sans printable-dashboard">
             <div className="p-4 md:p-8">
                 {/* Cabeçalho de Controle - Oculto na Impressão */}
                 <div className="flex flex-wrap items-center justify-between mb-8 gap-4 no-print">
                     <h1 className="text-2xl font-bold text-white uppercase tracking-tight">Projeção Financeira</h1>
-                    
-                    <div className="flex items-center gap-6 flex-wrap">
-                        {/* Filtro de Datas */}
+                    <div className="flex items-center gap-4 flex-wrap">
                         <div className="flex items-center gap-2">
                             <label className="text-xs font-bold text-slate-500 uppercase">Período:</label>
                             <input type="month" value={rangeStart} onChange={(e) => setRangeStart(e.target.value)} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 outline-none" />
                             <span className="text-slate-500">até</span>
                             <input type="month" value={rangeEnd} onChange={(e) => setRangeEnd(e.target.value)} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 outline-none" />
                         </div>
-
-                        {/* Seletor de Orientação */}
-                        <div className="flex items-center bg-slate-800 p-1 rounded-lg border border-slate-700">
-                            <button 
-                                onClick={() => setOrientation('portrait')}
-                                className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${orientation === 'portrait' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                            >
-                                RETRATO
-                            </button>
-                            <button 
-                                onClick={() => setOrientation('landscape')}
-                                className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${orientation === 'landscape' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                            >
-                                PAISAGEM
-                            </button>
-                        </div>
-
                         <button
                             onClick={() => window.print()}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-md transition-all text-sm font-black shadow-xl border border-indigo-400/30"
+                            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-md transition-all text-sm font-black shadow-xl"
                         >
                             <PrinterIcon className="w-5 h-5" />
-                            <span>GERAR PDF</span>
+                            <span>EXPORTAR RELATÓRIO PDF</span>
                         </button>
                     </div>
                 </div>
 
                 {/* Título do Relatório - Visível apenas no PDF */}
                 <div className="hidden print:block mb-10 border-b-4 border-black pb-4 text-black">
-                    <h1 className="text-4xl font-black uppercase tracking-tighter">Relatório de Performance Estratégica</h1>
+                    <h1 className="text-4xl font-black uppercase tracking-tighter">Relatório Estratégico de Performance</h1>
                     <div className="mt-4 grid grid-cols-2 text-sm">
-                        <p><strong>CLIENTE:</strong> {companyContext.currentCompany.name}</p>
-                        <p className="text-right"><strong>PERÍODO:</strong> {rangeStart} a {rangeEnd}</p>
-                        <p><strong>EMISSÃO:</strong> {new Date().toLocaleDateString('pt-BR')}</p>
-                        <p className="text-right"><strong>PÁGINA:</strong> 1 de 1 (Ref. Projeção)</p>
+                        <p><strong>CLIENTE/EMPRESA:</strong> {companyContext.currentCompany.name}</p>
+                        <p className="text-right"><strong>PERÍODO ANALISADO:</strong> {rangeStart} a {rangeEnd}</p>
+                        <p><strong>GERADO POR:</strong> FinanSys Pro v3.0</p>
+                        <p className="text-right"><strong>DATA DE EMISSÃO:</strong> {new Date().toLocaleDateString('pt-BR')}</p>
                     </div>
                 </div>
 
                 {/* Gráfico */}
                 <section className="bg-slate-800 p-4 rounded-lg shadow-lg mb-10 border border-white/10 print:border-black print:shadow-none chart-container">
-                    <h2 className="font-bold mb-6 text-slate-300 print:text-black uppercase text-xs tracking-widest border-l-4 border-indigo-500 pl-3">Fluxo de Performance Consolidado</h2>
+                    <h2 className="font-bold mb-6 text-slate-300 print:text-black uppercase text-xs tracking-widest border-l-4 border-indigo-500 pl-3">Evolução do Fluxo de Caixa</h2>
                     <div className="h-[350px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
@@ -191,9 +180,9 @@ const FinancialForecast: React.FC = () => {
                     </div>
                 </section>
 
-                {/* Tabelas de Detalhes - No modo Paisagem ficam lado a lado */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10 grid-to-stack">
-                    <section className="bg-slate-800 rounded-md shadow-lg border border-white/5 print:border-none print:shadow-none">
+                {/* Tabelas de Detalhes - No PDF ficam uma abaixo da outra */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10 print:block">
+                    <section className="bg-slate-800 rounded-md shadow-lg border border-white/5 print:border-none print:shadow-none print:mb-10">
                         <TableHeader title="DESPESAS OPERACIONAIS" />
                         <table className="w-full text-sm">
                             <thead className="bg-slate-700 print:bg-slate-200">
@@ -214,6 +203,16 @@ const FinancialForecast: React.FC = () => {
                                     </tr>
                                 ))}
                             </tbody>
+                            <tfoot className="bg-slate-700/50 print:bg-slate-100 font-bold">
+                                <tr className="border-t-2 border-slate-500 print:border-black">
+                                    <td className="px-4 py-2">TOTAL ACUMULADO</td>
+                                    <td className="px-4 py-2 text-right" colSpan={3}>{formatCurrency(totalDespesa)}</td>
+                                </tr>
+                                <tr className="text-xs text-slate-400 print:text-black">
+                                    <td className="px-4 py-1">MÉDIA MENSAL</td>
+                                    <td className="px-4 py-1 text-right" colSpan={3}>{formatCurrency(mediaDespesaTotal)}</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </section>
 
@@ -238,11 +237,21 @@ const FinancialForecast: React.FC = () => {
                                     </tr>
                                 ))}
                             </tbody>
+                            <tfoot className="bg-slate-700/50 print:bg-slate-100 font-bold">
+                                <tr className="border-t-2 border-slate-500 print:border-black">
+                                    <td className="px-4 py-2">TOTAL ACUMULADO</td>
+                                    <td className="px-4 py-2 text-right" colSpan={3}>{formatCurrency(totalFaturamento)}</td>
+                                </tr>
+                                <tr className="text-xs text-slate-400 print:text-black">
+                                    <td className="px-4 py-1">MÉDIA MENSAL</td>
+                                    <td className="px-4 py-1 text-right" colSpan={3}>{formatCurrency(mediaFaturamentoTotal)}</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </section>
                 </div>
 
-                {/* Consolidado Geral */}
+                {/* Consolidado e Saldo Final */}
                 <section className="mt-10 bg-slate-800 rounded-md shadow-xl border border-white/5 print:border-none print:shadow-none">
                     <TableHeader title="CONSOLIDADO GERAL DE RESULTADOS" />
                     <table className="w-full text-sm">
@@ -272,7 +281,6 @@ const FinancialForecast: React.FC = () => {
                     </table>
                 </section>
 
-                {/* Saldo Final */}
                 <div className="mt-10 flex justify-end print:mt-20">
                     <div className="bg-slate-800 p-8 rounded-xl shadow-2xl flex flex-col items-end gap-2 border-2 border-indigo-500 print:border-black print:bg-white print:p-4">
                         <span className="font-bold text-xs text-slate-400 print:text-black uppercase tracking-widest">Saldo Acumulado no Período</span>
@@ -283,8 +291,8 @@ const FinancialForecast: React.FC = () => {
                 </div>
 
                 <div className="hidden print:block mt-24 pt-8 border-t border-black text-center text-[10pt]">
-                    <p className="font-bold uppercase">FinanSys Pro v3.0 — Intelligent Management Systems</p>
-                    <p>Relatório emitido em {new Date().toLocaleString('pt-BR')} | {companyContext.currentCompany.name}</p>
+                    <p className="font-bold">FinanSys Pro v3.0 — Sistema Inteligente de Gestão Financeira</p>
+                    <p>Relatório emitido em {new Date().toLocaleString('pt-BR')} sob a responsabilidade de {companyContext.currentCompany.name}</p>
                 </div>
             </div>
         </div>

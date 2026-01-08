@@ -51,12 +51,12 @@
 
       @media print {
         @page {
-            margin: 1cm;
-            size: auto; /* IMPORTANTE: Permite que o usuário escolha Portrait ou Landscape no diálogo de impressão */
+            margin: 1.5cm;
+            size: a4 portrait;
         }
 
-        /* 1. RESET DE CONTAINERS PARA FLUXO CONTÍNUO */
-        html, body, #root, .App {
+        /* 1. RESET RADICAL: Remove tudo que trava a altura da página */
+        html, body, #root, .App, [class*="h-screen"], [class*="w-screen"] {
             height: auto !important;
             min-height: 0 !important;
             width: 100% !important;
@@ -64,19 +64,23 @@
             position: static !important;
             background: white !important;
             color: black !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
-        /* 2. OCULTAR ELEMENTOS DE INTERFACE */
+        /* 2. ESCONDER INTERFACE DO SISTEMA */
         .taskbar, header, .window-controls, .no-print, button, 
         .resize-handle, .desktop-icons, .desktop-wallpaper, 
         .absolute.inset-0, .backdrop-blur-md {
             display: none !important;
+            visibility: hidden !important;
         }
 
-        /* 3. DESMANTELAR JANELAS (RND) */
+        /* 3. DESMANTELAR O SISTEMA DE JANELAS (RND) */
         .window-frame, 
         div[class*="react-draggable"],
-        div[style*="position: absolute"] {
+        div[style*="position: absolute"],
+        div[style*="z-index"] {
             position: static !important;
             transform: none !important;
             width: 100% !important;
@@ -86,58 +90,62 @@
             border: none !important;
             margin: 0 !important;
             padding: 0 !important;
+            overflow: visible !important;
         }
 
-        main, .overflow-auto {
+        /* 4. FORÇAR CONTEÚDO A OCUPAR O PAPEL TODO */
+        main, .overflow-auto, .overflow-y-auto {
             overflow: visible !important;
             height: auto !important;
+            max-height: none !important;
             display: block !important;
         }
 
-        /* 4. FORMATAÇÃO DO RELATÓRIO */
         .printable-dashboard {
             background-color: white !important;
             color: black !important;
+            padding: 0 !important;
+            display: block !important;
             width: 100% !important;
         }
 
+        /* 5. AJUSTES DE ELEMENTOS VISUAIS PARA O PDF */
         .bg-slate-900, .bg-slate-800, .bg-slate-700 {
             background-color: transparent !important;
             color: black !important;
             border: none !important;
         }
 
+        /* Força tabelas a ocuparem 100% da largura e terem bordas pretas finas */
         table {
             border: 1px solid #000 !important;
             border-collapse: collapse !important;
             width: 100% !important;
-            margin-bottom: 20px !important;
+            margin-bottom: 25px !important;
         }
         
         th, td {
             border: 1px solid #000 !important;
-            padding: 6px !important;
-            font-size: 9pt !important;
+            padding: 5px 8px !important;
+            color: #000 !important;
+            font-size: 10pt !important;
+            background: white !important;
         }
 
-        /* Classes de Orientação Forçada */
-        .print-portrait .grid-to-stack {
+        /* Empilha grids lateralmente para caber na largura do A4 */
+        .grid {
             display: block !important;
         }
-        
-        .print-landscape .grid-to-stack {
-            display: grid !important;
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 15px !important;
-        }
 
-        section, table, .chart-container {
+        /* 6. REGRAS DE QUEBRA DE PÁGINA */
+        section, .bg-slate-800, table, .chart-container {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
+            margin-bottom: 20px !important;
         }
 
-        .text-green-400 { color: #006400 !important; font-weight: bold !important; }
-        .text-red-400 { color: #8b0000 !important; font-weight: bold !important; }
+        .text-green-400 { color: #008000 !important; font-weight: bold !important; }
+        .text-red-400 { color: #ff0000 !important; font-weight: bold !important; }
       }
     </style>
   <script type="importmap">
