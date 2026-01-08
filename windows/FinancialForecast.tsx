@@ -109,210 +109,190 @@ const FinancialForecast: React.FC = () => {
     const totalDespesaCom = monthlyData.reduce((acc, curr) => acc + curr.despesaCom, 0);
     const totalDespesaSem = monthlyData.reduce((acc, curr) => acc + curr.despesaSem, 0);
     const totalDespesa = totalDespesaCom + totalDespesaSem;
-    const mediaDespesaCom = monthlyData.length > 0 ? totalDespesaCom / monthlyData.length : 0;
-    const mediaDespesaSem = monthlyData.length > 0 ? totalDespesaSem / monthlyData.length : 0;
     const mediaDespesaTotal = monthlyData.length > 0 ? totalDespesa / monthlyData.length : 0;
 
     const totalFaturamentoCom = monthlyData.reduce((acc, curr) => acc + curr.faturamentoCom, 0);
     const totalFaturamentoSem = monthlyData.reduce((acc, curr) => acc + curr.faturamentoSem, 0);
     const totalFaturamento = totalFaturamentoCom + totalFaturamentoSem;
-    const mediaFaturamentoCom = monthlyData.length > 0 ? totalFaturamentoCom / monthlyData.length : 0;
-    const mediaFaturamentoSem = monthlyData.length > 0 ? totalFaturamentoSem / monthlyData.length : 0;
     const mediaFaturamentoTotal = monthlyData.length > 0 ? totalFaturamento / monthlyData.length : 0;
     
     const saldoTotal = totalFaturamento - totalDespesa;
     
     const TableHeader = ({ title }: { title: string }) => (
-        <div className="bg-slate-700 p-2 text-center font-bold text-lg rounded-t-md print:bg-slate-100 print:text-black print:border print:border-b-1 print:border-slate-300">
+        <div className="bg-slate-700 p-3 text-center font-bold text-lg rounded-t-md print:bg-slate-100 print:text-black print:border-t print:border-x print:border-black">
             {title}
         </div>
     );
 
     return (
-        <div className="bg-slate-900 text-slate-200 font-sans printable-dashboard overflow-visible">
-            <div className="p-4 md:p-6 lg:p-8">
-                <div className="flex flex-wrap items-center justify-between mb-6 gap-4 no-print">
-                    <h1 className="text-2xl font-bold text-white">Resumo Financeiro</h1>
+        <div className="bg-slate-900 text-slate-200 font-sans printable-dashboard">
+            <div className="p-4 md:p-8">
+                {/* Cabeçalho de Controle - Oculto na Impressão */}
+                <div className="flex flex-wrap items-center justify-between mb-8 gap-4 no-print">
+                    <h1 className="text-2xl font-bold text-white uppercase tracking-tight">Projeção Financeira</h1>
                     <div className="flex items-center gap-4 flex-wrap">
                         <div className="flex items-center gap-2">
-                            <label className="text-sm font-medium text-slate-400">De:</label>
-                            <input 
-                                type="month" 
-                                value={rangeStart} 
-                                onChange={(e) => setRangeStart(e.target.value)} 
-                                className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none text-white"
-                                style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}
-                            />
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <label className="text-sm font-medium text-slate-400">Até:</label>
-                            <input 
-                                type="month" 
-                                value={rangeEnd} 
-                                onChange={(e) => setRangeEnd(e.target.value)} 
-                                className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none text-white"
-                                style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties}
-                            />
+                            <label className="text-xs font-bold text-slate-500 uppercase">Período:</label>
+                            <input type="month" value={rangeStart} onChange={(e) => setRangeStart(e.target.value)} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 outline-none" />
+                            <span className="text-slate-500">até</span>
+                            <input type="month" value={rangeEnd} onChange={(e) => setRangeEnd(e.target.value)} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 outline-none" />
                         </div>
                         <button
                             onClick={() => window.print()}
-                            className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-md transition-colors text-sm font-bold shadow-md border border-slate-600"
+                            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-md transition-all text-sm font-black shadow-xl"
                         >
                             <PrinterIcon className="w-5 h-5" />
-                            <span>Exportar PDF</span>
+                            <span>EXPORTAR RELATÓRIO PDF</span>
                         </button>
                     </div>
                 </div>
 
-                <div className="hidden print:block mb-8 border-b-4 border-indigo-500 pb-4">
-                    <h1 className="text-3xl font-bold text-black uppercase tracking-tight">Relatório Consolidado de Projeção Financeira</h1>
-                    <div className="mt-4 grid grid-cols-2 text-sm text-slate-600">
-                        <p><strong>PERÍODO:</strong> {rangeStart} até {rangeEnd}</p>
-                        <p><strong>EMPRESA:</strong> {companyContext.currentCompany.name}</p>
-                        <p><strong>DATA DE EMISSÃO:</strong> {new Date().toLocaleDateString('pt-BR')}</p>
+                {/* Título do Relatório - Visível apenas no PDF */}
+                <div className="hidden print:block mb-10 border-b-4 border-black pb-4 text-black">
+                    <h1 className="text-4xl font-black uppercase tracking-tighter">Relatório Estratégico de Performance</h1>
+                    <div className="mt-4 grid grid-cols-2 text-sm">
+                        <p><strong>CLIENTE/EMPRESA:</strong> {companyContext.currentCompany.name}</p>
+                        <p className="text-right"><strong>PERÍODO ANALISADO:</strong> {rangeStart} a {rangeEnd}</p>
+                        <p><strong>GERADO POR:</strong> FinanSys Pro v3.0</p>
+                        <p className="text-right"><strong>DATA DE EMISSÃO:</strong> {new Date().toLocaleDateString('pt-BR')}</p>
                     </div>
                 </div>
 
-                <section className="bg-slate-800 p-4 rounded-lg shadow-lg mb-8 border border-slate-700/50 print:border print:border-slate-200 print:shadow-none print:break-inside-avoid">
-                    <h2 className="font-bold mb-4 text-slate-300 print:text-black uppercase text-xs tracking-widest border-l-4 border-indigo-500 pl-2">Gráfico de Performance (Faturamento vs Despesa)</h2>
+                {/* Gráfico */}
+                <section className="bg-slate-800 p-4 rounded-lg shadow-lg mb-10 border border-white/10 print:border-black print:shadow-none chart-container">
+                    <h2 className="font-bold mb-6 text-slate-300 print:text-black uppercase text-xs tracking-widest border-l-4 border-indigo-500 pl-3">Evolução do Fluxo de Caixa</h2>
                     <div className="h-[350px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 30, bottom: 0 }}>
+                            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                                 <defs>
-                                    <linearGradient id="colorFaturamento" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
-                                    <linearGradient id="colorDespesa" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/><stop offset="95%" stopColor="#ef4444" stopOpacity={0}/></linearGradient>
+                                    <linearGradient id="colorFat" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+                                    <linearGradient id="colorDesp" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/><stop offset="95%" stopColor="#ef4444" stopOpacity={0}/></linearGradient>
                                 </defs>
-                                <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
-                                <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(value) => formatCurrency(Number(value))} />
-                                <CartesianGrid strokeDasharray="3 3" stroke="#475569" vertical={false} />
+                                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} />
+                                <YAxis stroke="#94a3b8" fontSize={11} tickFormatter={(v) => `R$ ${v/1000}k`} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
                                 <Tooltip content={<CustomTooltip />} />
-                                <Legend verticalAlign="top" height={36}/>
-                                <Area type="monotone" name="Faturamento Total" dataKey="Faturamento" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorFaturamento)" />
-                                <Area type="monotone" name="Despesa Total" dataKey="Despesa" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorDespesa)" />
+                                <Legend verticalAlign="top" height={40}/>
+                                <Area type="monotone" name="Faturamento" dataKey="Faturamento" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorFat)" />
+                                <Area type="monotone" name="Despesa" dataKey="Despesa" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorDesp)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </section>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 print:block">
-                    <section className="bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200 print:shadow-none print:mb-8 print:break-inside-avoid">
-                        <TableHeader title="DESPESAS DETALHADAS POR MÊS" />
+                {/* Tabelas de Detalhes - No PDF ficam uma abaixo da outra */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10 print:block">
+                    <section className="bg-slate-800 rounded-md shadow-lg border border-white/5 print:border-none print:shadow-none print:mb-10">
+                        <TableHeader title="DESPESAS OPERACIONAIS" />
                         <table className="w-full text-sm">
-                            <thead className="bg-slate-700/50 print:bg-slate-50">
+                            <thead className="bg-slate-700 print:bg-slate-200">
                                 <tr>
                                     <th className="px-4 py-2 text-left">MÊS</th>
-                                    <th className="px-4 py-2 text-right">COM NF</th>
-                                    <th className="px-4 py-2 text-right">SEM NF</th>
-                                    <th className="px-4 py-2 text-right">SUBTOTAL</th>
+                                    <th className="px-4 py-2 text-right">COM NOTA</th>
+                                    <th className="px-4 py-2 text-right">SEM NOTA</th>
+                                    <th className="px-4 py-2 text-right">TOTAL</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {monthlyData.map((data, index) => (
-                                    <tr key={index} className="border-b border-slate-700 print:border-slate-200">
+                                    <tr key={index} className="border-b border-slate-700 print:border-black">
                                         <td className="px-4 py-2 font-semibold">{data.month}</td>
                                         <td className="px-4 py-2 text-right">{formatCurrency(data.despesaCom)}</td>
                                         <td className="px-4 py-2 text-right">{formatCurrency(data.despesaSem)}</td>
-                                        <td className="px-4 py-2 text-right font-bold text-red-400">{formatCurrency(data.totalDespesa)}</td>
+                                        <td className="px-4 py-2 text-right font-bold text-red-400 print:text-black">{formatCurrency(data.totalDespesa)}</td>
                                     </tr>
                                 ))}
                             </tbody>
-                            <tfoot className="print:bg-slate-50">
-                                <tr className="bg-slate-700/50 font-bold border-t-2 border-slate-600 print:border-slate-300">
-                                    <td className="px-4 py-2 text-left uppercase">Total Acumulado</td>
-                                    <td className="px-4 py-2 text-right">{formatCurrency(totalDespesaCom)}</td>
-                                    <td className="px-4 py-2 text-right">{formatCurrency(totalDespesaSem)}</td>
-                                    <td className="px-4 py-2 text-right text-red-500">{formatCurrency(totalDespesa)}</td>
+                            <tfoot className="bg-slate-700/50 print:bg-slate-100 font-bold">
+                                <tr className="border-t-2 border-slate-500 print:border-black">
+                                    <td className="px-4 py-2">TOTAL ACUMULADO</td>
+                                    <td className="px-4 py-2 text-right" colSpan={3}>{formatCurrency(totalDespesa)}</td>
                                 </tr>
-                                <tr className="bg-slate-700/30 text-xs text-slate-400 print:text-slate-600">
-                                    <td className="px-4 py-2 text-left uppercase">Média Mensal</td>
-                                    <td className="px-4 py-2 text-right">{formatCurrency(mediaDespesaCom)}</td>
-                                    <td className="px-4 py-2 text-right">{formatCurrency(mediaDespesaSem)}</td>
-                                    <td className="px-4 py-2 text-right font-bold">{formatCurrency(mediaDespesaTotal)}</td>
+                                <tr className="text-xs text-slate-400 print:text-black">
+                                    <td className="px-4 py-1">MÉDIA MENSAL</td>
+                                    <td className="px-4 py-1 text-right" colSpan={3}>{formatCurrency(mediaDespesaTotal)}</td>
                                 </tr>
                             </tfoot>
                         </table>
                     </section>
 
-                    <section className="bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200 print:shadow-none print:break-inside-avoid">
-                        <TableHeader title="FATURAMENTO DETALHADO POR MÊS" />
+                    <section className="bg-slate-800 rounded-md shadow-lg border border-white/5 print:border-none print:shadow-none">
+                        <TableHeader title="FATURAMENTO OPERACIONAL" />
                         <table className="w-full text-sm">
-                            <thead className="bg-slate-700/50 print:bg-slate-50">
+                            <thead className="bg-slate-700 print:bg-slate-200">
                                 <tr>
                                     <th className="px-4 py-2 text-left">MÊS</th>
-                                    <th className="px-4 py-2 text-right">COM NF</th>
-                                    <th className="px-4 py-2 text-right">SEM NF</th>
-                                    <th className="px-4 py-2 text-right">SUBTOTAL</th>
+                                    <th className="px-4 py-2 text-right">COM NOTA</th>
+                                    <th className="px-4 py-2 text-right">SEM NOTA</th>
+                                    <th className="px-4 py-2 text-right">TOTAL</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {monthlyData.map((data, index) => (
-                                    <tr key={index} className="border-b border-slate-700 print:border-slate-200">
+                                    <tr key={index} className="border-b border-slate-700 print:border-black">
                                         <td className="px-4 py-2 font-semibold">{data.month}</td>
                                         <td className="px-4 py-2 text-right">{formatCurrency(data.faturamentoCom)}</td>
                                         <td className="px-4 py-2 text-right">{formatCurrency(data.faturamentoSem)}</td>
-                                        <td className="px-4 py-2 text-right font-bold text-green-400">{formatCurrency(data.totalFaturamento)}</td>
+                                        <td className="px-4 py-2 text-right font-bold text-green-400 print:text-black">{formatCurrency(data.totalFaturamento)}</td>
                                     </tr>
                                 ))}
                             </tbody>
-                            <tfoot className="print:bg-slate-50">
-                                <tr className="bg-slate-700/50 font-bold border-t-2 border-slate-600 print:border-slate-300">
-                                    <td className="px-4 py-2 text-left uppercase">Total Acumulado</td>
-                                    <td className="px-4 py-2 text-right">{formatCurrency(totalFaturamentoCom)}</td>
-                                    <td className="px-4 py-2 text-right">{formatCurrency(totalFaturamentoSem)}</td>
-                                    <td className="px-4 py-2 text-right text-green-500">{formatCurrency(totalFaturamento)}</td>
+                            <tfoot className="bg-slate-700/50 print:bg-slate-100 font-bold">
+                                <tr className="border-t-2 border-slate-500 print:border-black">
+                                    <td className="px-4 py-2">TOTAL ACUMULADO</td>
+                                    <td className="px-4 py-2 text-right" colSpan={3}>{formatCurrency(totalFaturamento)}</td>
                                 </tr>
-                                 <tr className="bg-slate-700/30 text-xs text-slate-400 print:text-slate-600">
-                                    <td className="px-4 py-2 text-left uppercase">Média Mensal</td>
-                                    <td className="px-4 py-2 text-right">{formatCurrency(mediaFaturamentoCom)}</td>
-                                    <td className="px-4 py-2 text-right">{formatCurrency(mediaFaturamentoSem)}</td>
-                                    <td className="px-4 py-2 text-right font-bold">{formatCurrency(mediaFaturamentoTotal)}</td>
+                                <tr className="text-xs text-slate-400 print:text-black">
+                                    <td className="px-4 py-1">MÉDIA MENSAL</td>
+                                    <td className="px-4 py-1 text-right" colSpan={3}>{formatCurrency(mediaFaturamentoTotal)}</td>
                                 </tr>
                             </tfoot>
                         </table>
                     </section>
                 </div>
-                
-                <section className="mt-8 bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200 print:shadow-none print:break-inside-avoid">
-                     <TableHeader title="CONSOLIDADO GERAL DE OFICINA" />
-                     <table className="w-full text-sm">
-                        <thead className="bg-slate-700/50 print:bg-slate-50">
+
+                {/* Consolidado e Saldo Final */}
+                <section className="mt-10 bg-slate-800 rounded-md shadow-xl border border-white/5 print:border-none print:shadow-none">
+                    <TableHeader title="CONSOLIDADO GERAL DE RESULTADOS" />
+                    <table className="w-full text-sm">
+                        <thead className="bg-slate-700 print:bg-slate-200">
                             <tr>
                                 <th className="px-4 py-2 text-left">MÊS DE REFERÊNCIA</th>
-                                <th className="px-4 py-2 text-right">TOTAL DAS DESPESAS</th>
-                                <th className="px-4 py-2 text-right">TOTAL DOS FATURAMENTOS</th>
-                                <th className="px-4 py-2 text-right">SALDO LÍQUIDO MENSAL</th>
+                                <th className="px-4 py-2 text-right">TOTAL DESPESAS</th>
+                                <th className="px-4 py-2 text-right">TOTAL FATURAMENTO</th>
+                                <th className="px-4 py-2 text-right">SALDO LÍQUIDO</th>
                             </tr>
                         </thead>
                         <tbody>
                             {monthlyData.map((data, index) => {
                                 const totalMes = data.totalFaturamento - data.totalDespesa;
                                 return (
-                                    <tr key={index} className="border-b border-slate-700 print:border-slate-200">
+                                    <tr key={index} className="border-b border-slate-700 print:border-black">
                                         <td className="px-4 py-2 font-semibold uppercase">{data.month}</td>
-                                        <td className="px-4 py-2 text-right">{formatCurrency(data.totalDespesa)}</td>
-                                        <td className="px-4 py-2 text-right">{formatCurrency(data.totalFaturamento)}</td>
-                                        <td className={`px-4 py-2 text-right font-bold ${totalMes < 0 ? 'text-red-400' : 'text-green-400'}`}>
+                                        <td className="px-4 py-2 text-right text-red-300 print:text-black">{formatCurrency(data.totalDespesa)}</td>
+                                        <td className="px-4 py-2 text-right text-green-300 print:text-black">{formatCurrency(data.totalFaturamento)}</td>
+                                        <td className={`px-4 py-2 text-right font-black ${totalMes < 0 ? 'text-red-500' : 'text-green-500'} print:text-black`}>
                                             {formatCurrency(totalMes)}
                                         </td>
                                     </tr>
                                 );
                             })}
                         </tbody>
-                     </table>
+                    </table>
                 </section>
 
-                <div className="mt-8 flex justify-end print:mt-12">
-                    <div className="bg-slate-800 p-6 rounded-md shadow-xl flex flex-col items-end gap-2 border border-slate-700/50 print:border-2 print:border-indigo-600 print:bg-white print:shadow-none">
-                        <span className="font-bold text-xs text-slate-400 print:text-indigo-600 uppercase tracking-widest">Saldo Geral Acumulado no Período Selecionado</span>
-                        <span className={`text-4xl font-black ${saldoTotal >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                <div className="mt-10 flex justify-end print:mt-20">
+                    <div className="bg-slate-800 p-8 rounded-xl shadow-2xl flex flex-col items-end gap-2 border-2 border-indigo-500 print:border-black print:bg-white print:p-4">
+                        <span className="font-bold text-xs text-slate-400 print:text-black uppercase tracking-widest">Saldo Acumulado no Período</span>
+                        <span className={`text-5xl font-black ${saldoTotal >= 0 ? 'text-green-400' : 'text-red-400'} print:text-black print:text-3xl`}>
                             {formatCurrency(saldoTotal)}
                         </span>
                     </div>
                 </div>
-                
-                <div className="hidden print:block mt-16 pt-8 border-t border-slate-200 text-center text-xs text-slate-400">
-                    <p className="font-bold text-slate-600 uppercase">FinanSys Pro v3.0 — Sistema de Gestão Estratégica</p>
-                    <p>Relatório gerado em {new Date().toLocaleString('pt-BR')} por {companyContext.currentCompany.name}</p>
+
+                <div className="hidden print:block mt-24 pt-8 border-t border-black text-center text-[10pt]">
+                    <p className="font-bold">FinanSys Pro v3.0 — Sistema Inteligente de Gestão Financeira</p>
+                    <p>Relatório emitido em {new Date().toLocaleString('pt-BR')} sob a responsabilidade de {companyContext.currentCompany.name}</p>
                 </div>
             </div>
         </div>

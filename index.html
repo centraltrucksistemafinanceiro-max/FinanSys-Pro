@@ -55,26 +55,36 @@
             size: a4 portrait;
         }
 
-        /* 1. RESET ABSOLUTO: Remove qualquer restrição de altura que impeça múltiplas páginas */
-        html, body, #root, .App {
+        /* 1. RESET RADICAL: Remove tudo que trava a altura da página */
+        html, body, #root, .App, [class*="h-screen"], [class*="w-screen"] {
             height: auto !important;
             min-height: 0 !important;
+            width: 100% !important;
             overflow: visible !important;
+            position: static !important;
             background: white !important;
             color: black !important;
-            display: block !important;
-            position: static !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
-        /* 2. DESCONSTRUÇÃO DA INTERFACE DE JANELAS */
+        /* 2. ESCONDER INTERFACE DO SISTEMA */
+        .taskbar, header, .window-controls, .no-print, button, 
+        .resize-handle, .desktop-icons, .desktop-wallpaper, 
+        .absolute.inset-0, .backdrop-blur-md {
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        /* 3. DESMANTELAR O SISTEMA DE JANELAS (RND) */
         .window-frame, 
         div[class*="react-draggable"],
         div[style*="position: absolute"],
         div[style*="z-index"] {
             position: static !important;
+            transform: none !important;
             width: 100% !important;
             height: auto !important;
-            transform: none !important;
             display: block !important;
             box-shadow: none !important;
             border: none !important;
@@ -83,31 +93,14 @@
             overflow: visible !important;
         }
 
-        /* 3. EXPANSÃO DE CONTEÚDO */
-        main, 
-        .overflow-auto, 
-        .overflow-y-auto {
+        /* 4. FORÇAR CONTEÚDO A OCUPAR O PAPEL TODO */
+        main, .overflow-auto, .overflow-y-auto {
             overflow: visible !important;
             height: auto !important;
             max-height: none !important;
             display: block !important;
-            position: static !important;
         }
 
-        /* 4. LIMPEZA DE ELEMENTOS UI */
-        .taskbar, 
-        header, 
-        .window-controls, 
-        .no-print, 
-        button, 
-        .resize-handle, 
-        .desktop-icons,
-        .desktop-wallpaper,
-        .absolute.inset-0 {
-            display: none !important;
-        }
-
-        /* 5. ESTILIZAÇÃO DO RELATÓRIO NO PAPEL */
         .printable-dashboard {
             background-color: white !important;
             color: black !important;
@@ -116,56 +109,43 @@
             width: 100% !important;
         }
 
+        /* 5. AJUSTES DE ELEMENTOS VISUAIS PARA O PDF */
         .bg-slate-900, .bg-slate-800, .bg-slate-700 {
             background-color: transparent !important;
             color: black !important;
             border: none !important;
         }
 
-        /* Força bordas em tabelas para impressão */
+        /* Força tabelas a ocuparem 100% da largura e terem bordas pretas finas */
         table {
-            border: 1px solid #ddd !important;
+            border: 1px solid #000 !important;
             border-collapse: collapse !important;
             width: 100% !important;
-            margin-bottom: 30px !important;
-            page-break-inside: auto;
+            margin-bottom: 25px !important;
         }
-
-        tr {
-            page-break-inside: avoid;
-            page-break-after: auto;
-        }
-
+        
         th, td {
-            border: 1px solid #ddd !important;
-            padding: 8px !important;
-            color: black !important;
+            border: 1px solid #000 !important;
+            padding: 5px 8px !important;
+            color: #000 !important;
+            font-size: 10pt !important;
+            background: white !important;
         }
 
-        /* 6. QUEBRAS DE PÁGINA INTELIGENTES */
-        section, .grid, .flex-col, .mb-6, .mt-6 {
+        /* Empilha grids lateralmente para caber na largura do A4 */
+        .grid {
             display: block !important;
-            width: 100% !important;
-            page-break-inside: auto !important;
         }
 
-        /* Evita que blocos de tabela ou o saldo sejam cortados ao meio */
-        .bg-slate-800, .rounded-md {
-            break-inside: avoid;
-            page-break-inside: avoid;
+        /* 6. REGRAS DE QUEBRA DE PÁGINA */
+        section, .bg-slate-800, table, .chart-container {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
             margin-bottom: 20px !important;
         }
 
-        .recharts-responsive-container {
-            height: 350px !important;
-            width: 100% !important;
-            page-break-inside: avoid;
-        }
-
-        /* Força cores de status no papel */
-        .text-green-400 { color: #059669 !important; font-weight: bold !important; }
-        .text-red-400 { color: #dc2626 !important; font-weight: bold !important; }
-        .text-slate-400 { color: #64748b !important; }
+        .text-green-400 { color: #008000 !important; font-weight: bold !important; }
+        .text-red-400 { color: #ff0000 !important; font-weight: bold !important; }
       }
     </style>
   <script type="importmap">
