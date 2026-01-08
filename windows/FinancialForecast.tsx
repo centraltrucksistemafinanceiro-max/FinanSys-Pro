@@ -131,9 +131,9 @@ const FinancialForecast: React.FC = () => {
     return (
         <div className="bg-slate-900 min-h-full overflow-y-auto text-slate-200 font-sans printable-dashboard">
             <div className="p-4 md:p-6">
-                <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
-                    <h1 className="text-2xl font-bold">Resumo Financeiro</h1>
-                    <div className="flex items-center gap-4 no-print flex-wrap">
+                <div className="flex flex-wrap items-center justify-between mb-6 gap-4 no-print">
+                    <h1 className="text-2xl font-bold text-white">Resumo Financeiro</h1>
+                    <div className="flex items-center gap-4 flex-wrap">
                         <div className="flex items-center gap-2">
                             <label className="text-sm font-medium text-slate-400">De:</label>
                             <input 
@@ -164,27 +164,35 @@ const FinancialForecast: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-slate-800 p-4 rounded-lg shadow-lg mb-6 border border-slate-700/50 print:border print:border-slate-200">
+                <div className="hidden print:block mb-8">
+                    <h1 className="text-3xl font-bold text-black border-b-2 border-slate-200 pb-2">Relatório de Projeção Financeira</h1>
+                    <p className="text-slate-600 mt-1">Período: {rangeStart} até {rangeEnd}</p>
+                    <p className="text-slate-600">Empresa: {companyContext.currentCompany.name}</p>
+                </div>
+
+                <div className="bg-slate-800 p-4 rounded-lg shadow-lg mb-6 border border-slate-700/50 print:border print:border-slate-200 print:shadow-none">
                     <h2 className="font-bold mb-4 text-slate-300 print:text-black">Projeção Faturamento vs. Despesa</h2>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 30, bottom: 5 }}>
-                            <defs>
-                                <linearGradient id="colorFaturamento" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
-                                <linearGradient id="colorDespesa" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/><stop offset="95%" stopColor="#ef4444" stopOpacity={0}/></linearGradient>
-                            </defs>
-                            <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
-                            <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(value) => formatCurrency(Number(value))} />
-                            <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend wrapperStyle={{fontSize: "12px"}} />
-                            <Area type="monotone" dataKey="Faturamento" stroke="#10b981" fillOpacity={1} fill="url(#colorFaturamento)" />
-                            <Area type="monotone" dataKey="Despesa" stroke="#ef4444" fillOpacity={1} fill="url(#colorDespesa)" />
-                        </AreaChart>
-                    </ResponsiveContainer>
+                    <div className="h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 30, bottom: 5 }}>
+                                <defs>
+                                    <linearGradient id="colorFaturamento" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+                                    <linearGradient id="colorDespesa" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/><stop offset="95%" stopColor="#ef4444" stopOpacity={0}/></linearGradient>
+                                </defs>
+                                <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
+                                <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(value) => formatCurrency(Number(value))} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Legend wrapperStyle={{fontSize: "12px"}} />
+                                <Area type="monotone" dataKey="Faturamento" stroke="#10b981" fillOpacity={1} fill="url(#colorFaturamento)" />
+                                <Area type="monotone" dataKey="Despesa" stroke="#ef4444" fillOpacity={1} fill="url(#colorDespesa)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    <div className="bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200">
+                    <div className="bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200 print:shadow-none print:break-inside-avoid">
                         <TableHeader title="DESPESA OFICINA" />
                         <table className="w-full text-sm">
                             <thead className="bg-slate-700/50 print:bg-slate-50">
@@ -222,7 +230,7 @@ const FinancialForecast: React.FC = () => {
                         </table>
                     </div>
 
-                    <div className="bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200">
+                    <div className="bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200 print:shadow-none print:break-inside-avoid">
                         <TableHeader title="FATURAMENTO OFICINA" />
                         <table className="w-full text-sm">
                             <thead className="bg-slate-700/50 print:bg-slate-50">
@@ -261,7 +269,7 @@ const FinancialForecast: React.FC = () => {
                     </div>
                 </div>
                 
-                <div className="mt-6 bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200">
+                <div className="mt-6 bg-slate-800 rounded-md shadow-lg border border-slate-700/50 print:border print:border-slate-200 print:shadow-none">
                      <TableHeader title="OFICINA" />
                      <table className="w-full text-sm">
                         <thead className="bg-slate-700/50 print:bg-slate-50">
@@ -291,8 +299,8 @@ const FinancialForecast: React.FC = () => {
                 </div>
 
                 <div className="mt-6 flex justify-end">
-                    <div className="bg-slate-800 p-4 rounded-md shadow-xl flex items-center gap-4 border border-slate-700/50 print:border print:border-slate-300">
-                        <span className="font-bold text-lg print:text-black">SALDO</span>
+                    <div className="bg-slate-800 p-4 rounded-md shadow-xl flex items-center gap-4 border border-slate-700/50 print:border print:border-slate-300 print:shadow-none">
+                        <span className="font-bold text-lg print:text-black">SALDO GERAL ACUMULADO</span>
                         <span className={`text-2xl font-bold ${saldoTotal >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                             {formatCurrency(saldoTotal)}
                         </span>
