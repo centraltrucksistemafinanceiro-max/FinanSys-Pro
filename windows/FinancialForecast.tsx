@@ -158,20 +158,20 @@ const FinancialForecast: React.FC = () => {
 
                 <section className="bg-slate-800 p-4 rounded-lg shadow-lg mb-10 border border-white/10 print:border-black print:shadow-none chart-container">
                     <h2 className="font-bold mb-6 text-slate-300 print:text-black uppercase text-xs tracking-widest border-l-4 border-indigo-500 pl-3">Evolução do Fluxo de Caixa</h2>
-                    <div className="h-[300px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
+                    <div className="h-[350px] w-full">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorFat" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
                                     <linearGradient id="colorDesp" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/><stop offset="95%" stopColor="#ef4444" stopOpacity={0}/></linearGradient>
                                 </defs>
-                                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} interval={0} />
-                                <YAxis stroke="#94a3b8" fontSize={11} tickFormatter={(v) => `R$ ${v/1000}k`} width={50} />
+                                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} />
+                                <YAxis stroke="#94a3b8" fontSize={11} tickFormatter={(v) => `R$ ${v/1000}k`} />
                                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
                                 <Tooltip content={<CustomTooltip />} />
                                 <Legend verticalAlign="top" height={40}/>
-                                <Area type="monotone" name="Faturamento" dataKey="Faturamento" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorFat)" isAnimationActive={false} />
-                                <Area type="monotone" name="Despesa" dataKey="Despesa" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorDesp)" isAnimationActive={false} />
+                                <Area type="monotone" name="Faturamento" dataKey="Faturamento" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorFat)" />
+                                <Area type="monotone" name="Despesa" dataKey="Despesa" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorDesp)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>

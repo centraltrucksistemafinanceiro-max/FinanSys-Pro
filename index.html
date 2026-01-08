@@ -51,14 +51,15 @@
 
       @media print {
         @page {
-            margin: 1cm;
+            margin: 1.5cm;
             size: a4 portrait;
         }
 
-        /* 1. RESET E FLUXO DE DOCUMENTO */
+        /* 1. RESET RADICAL: Remove tudo que trava a altura da página */
         html, body, #root, .App, [class*="h-screen"], [class*="w-screen"] {
             height: auto !important;
-            width: 21cm !important; /* Largura exata do A4 */
+            min-height: 0 !important;
+            width: 100% !important;
             overflow: visible !important;
             position: static !important;
             background: white !important;
@@ -70,11 +71,12 @@
         /* 2. ESCONDER INTERFACE DO SISTEMA */
         .taskbar, header, .window-controls, .no-print, button, 
         .resize-handle, .desktop-icons, .desktop-wallpaper, 
-        .absolute.inset-0, .backdrop-blur-md, .bg-black\/10, .bg-black\/20 {
+        .absolute.inset-0, .backdrop-blur-md {
             display: none !important;
+            visibility: hidden !important;
         }
 
-        /* 3. DESATIVAR TRANSFORMADAS DA JANELA (RND) */
+        /* 3. DESMANTELAR O SISTEMA DE JANELAS (RND) */
         .window-frame, 
         div[class*="react-draggable"],
         div[style*="position: absolute"],
@@ -91,11 +93,11 @@
             overflow: visible !important;
         }
 
+        /* 4. FORÇAR CONTEÚDO A OCUPAR O PAPEL TODO */
         main, .overflow-auto, .overflow-y-auto {
             overflow: visible !important;
             height: auto !important;
             max-height: none !important;
-            width: 100% !important;
             display: block !important;
         }
 
@@ -104,62 +106,42 @@
             color: black !important;
             padding: 0 !important;
             display: block !important;
-            width: 19cm !important; /* Largura segura com margem */
-            margin: 0 auto !important;
-        }
-
-        /* 4. FIX DEFINITIVO PARA RECHARTS NO PDF */
-        .chart-container {
-            width: 19cm !important; 
-            height: 300px !important; /* Altura fixa ajuda a renderizar no PDF */
-            display: block !important;
-            overflow: visible !important;
-            page-break-inside: avoid !important;
-            margin: 10px 0 !important;
-        }
-        
-        /* Força o Recharts a ocupar todo o container de 19cm */
-        .recharts-responsive-container {
             width: 100% !important;
-            height: 100% !important;
-            min-width: 19cm !important;
-            display: block !important;
         }
 
-        .recharts-surface, .recharts-wrapper {
-            width: 100% !important;
-            height: 100% !important;
+        /* 5. AJUSTES DE ELEMENTOS VISUAIS PARA O PDF */
+        .bg-slate-900, .bg-slate-800, .bg-slate-700 {
+            background-color: transparent !important;
+            color: black !important;
+            border: none !important;
         }
 
-        svg {
-            width: 100% !important;
-            height: auto !important;
-        }
-
-        /* 5. AJUSTES DE TABELAS */
+        /* Força tabelas a ocuparem 100% da largura e terem bordas pretas finas */
         table {
             border: 1px solid #000 !important;
             border-collapse: collapse !important;
             width: 100% !important;
-            margin-bottom: 20px !important;
+            margin-bottom: 25px !important;
         }
         
         th, td {
             border: 1px solid #000 !important;
-            padding: 4px 6px !important;
+            padding: 5px 8px !important;
             color: #000 !important;
-            font-size: 9pt !important;
+            font-size: 10pt !important;
+            background: white !important;
         }
 
+        /* Empilha grids lateralmente para caber na largura do A4 */
         .grid {
             display: block !important;
         }
 
-        section {
+        /* 6. REGRAS DE QUEBRA DE PÁGINA */
+        section, .bg-slate-800, table, .chart-container {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
-            margin-bottom: 30px !important;
-            width: 100% !important;
+            margin-bottom: 20px !important;
         }
 
         .text-green-400 { color: #008000 !important; font-weight: bold !important; }
