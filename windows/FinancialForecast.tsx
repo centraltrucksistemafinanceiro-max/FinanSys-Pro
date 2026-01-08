@@ -170,8 +170,8 @@ const FinancialForecast: React.FC = () => {
                                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
                                 <Tooltip content={<CustomTooltip />} />
                                 <Legend verticalAlign="top" height={40}/>
-                                <Area type="monotone" name="Faturamento" dataKey="Faturamento" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorFat)" />
-                                <Area type="monotone" name="Despesa" dataKey="Despesa" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorDesp)" />
+                                <Area type="monotone" name="Faturamento" dataKey="Faturamento" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorFat)" isAnimationActive={false} />
+                                <Area type="monotone" name="Despesa" dataKey="Despesa" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorDesp)" isAnimationActive={false} />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
