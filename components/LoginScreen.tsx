@@ -7,6 +7,7 @@ import { EyeIcon, EyeSlashIcon, ExclamationTriangleIcon } from '@heroicons/react
 import Logo from './Logo';
 
 const REMEMBER_ME_KEY = 'rememberedUsername';
+const BRAND_BLUE = '#3b82f6'; 
 
 const LoginScreen: React.FC = () => {
   const auth = useContext(AuthContext);
@@ -65,18 +66,18 @@ const LoginScreen: React.FC = () => {
     <div className="h-screen w-screen flex items-center justify-center bg-cover bg-center" style={{ backgroundImage: `url(${wallpaperUrl})` }}>
       <div className="absolute inset-0 bg-black/60" />
       
-      <div className="relative w-full max-w-sm p-8 space-y-6 bg-slate-200/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-xl shadow-2xl border border-white/20">
+      <div className="relative w-full max-w-sm p-8 space-y-6 bg-[#1e293b]/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10">
         <div className="text-center">
-          <Logo className="w-56 h-56 object-contain mx-auto mb-4" />
-          <h1 className="text-3xl font-bold tracking-tight" style={{ color: '#3b82f6' }}>
+          <Logo className="w-24 h-24 mx-auto mb-4 object-contain" />
+          <h1 className="text-3xl font-bold tracking-tight text-white">
             FinanSys Pro
           </h1>
-          <p className="text-slate-600 dark:text-slate-300 text-sm font-medium mt-1">Gestão Financeira Avançada</p>
+          <p className="text-slate-400 text-sm font-medium mt-1 uppercase tracking-wider">Acesso ao Sistema</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="username-input" className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+            <label htmlFor="username-input" className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
               Usuário
             </label>
             <input
@@ -87,14 +88,14 @@ const LoginScreen: React.FC = () => {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value.toUpperCase())}
-              className="block w-full px-4 py-3 bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 transition-all uppercase"
-              style={{ '--tw-ring-color': settings.accentColor } as React.CSSProperties}
+              className="block w-full px-4 py-3 bg-white/5 border border-slate-600 rounded-lg shadow-sm placeholder-slate-500 focus:outline-none focus:ring-2 transition-all uppercase text-white"
+              style={{ '--tw-ring-color': BRAND_BLUE } as React.CSSProperties}
               placeholder="Digite seu usuário"
             />
           </div>
           
           <div>
-            <label htmlFor="password" className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+            <label htmlFor="password" className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
               Senha
             </label>
             <div className="relative">
@@ -106,14 +107,14 @@ const LoginScreen: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full px-4 py-3 bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 pr-10 transition-all"
-                  style={{ '--tw-ring-color': settings.accentColor } as React.CSSProperties}
+                  className="block w-full px-4 py-3 bg-white/5 border border-slate-600 rounded-lg shadow-sm placeholder-slate-500 focus:outline-none focus:ring-2 pr-10 transition-all text-white"
+                  style={{ '--tw-ring-color': BRAND_BLUE } as React.CSSProperties}
                   placeholder="Sua senha"
                 />
                 <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 hover:text-slate-300 transition-colors"
                     tabIndex={-1}
                 >
                     {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
@@ -122,20 +123,20 @@ const LoginScreen: React.FC = () => {
           </div>
           
           <div className="flex items-center justify-between">
-            <label className="flex items-center cursor-pointer">
+            <label className="flex items-center cursor-pointer group">
               <input
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
-                style={{ accentColor: settings.accentColor }}
+                className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-blue-600 focus:ring-blue-500"
+                style={{ accentColor: BRAND_BLUE }}
               />
-              <span className="ml-2 text-sm text-slate-600 dark:text-slate-300 select-none">Lembrar usuário</span>
+              <span className="ml-2 text-sm text-slate-400 group-hover:text-slate-200 transition-colors select-none">Lembrar usuário</span>
             </label>
           </div>
 
           {error && (
-            <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 rounded-lg flex items-start gap-2 animate-fade-in">
+            <div className="text-sm text-red-400 bg-red-900/20 border border-red-900/50 p-3 rounded-lg flex items-start gap-2 animate-fade-in">
                 <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0" />
                 <span>{error}</span>
             </div>
@@ -144,8 +145,8 @@ const LoginScreen: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-bold text-white transition-all transform hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            style={{ backgroundColor: settings.accentColor }}
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-black text-white transition-all transform hover:-translate-y-0.5 hover:shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            style={{ backgroundColor: BRAND_BLUE }}
           >
             {isLoading ? (
                 <span className="flex items-center gap-2">
@@ -153,7 +154,7 @@ const LoginScreen: React.FC = () => {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Autenticando...
+                    AUTENTICANDO...
                 </span>
             ) : (
                 'ENTRAR NO SISTEMA'

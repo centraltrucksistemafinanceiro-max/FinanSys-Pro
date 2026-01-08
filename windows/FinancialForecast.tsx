@@ -127,7 +127,6 @@ const FinancialForecast: React.FC = () => {
     return (
         <div className="bg-slate-900 text-slate-200 font-sans printable-dashboard">
             <div className="p-4 md:p-8">
-                {/* Cabeçalho de Controle - Oculto na Impressão */}
                 <div className="flex flex-wrap items-center justify-between mb-8 gap-4 no-print">
                     <h1 className="text-2xl font-bold text-white uppercase tracking-tight">Projeção Financeira</h1>
                     <div className="flex items-center gap-4 flex-wrap">
@@ -147,7 +146,6 @@ const FinancialForecast: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Título do Relatório - Visível apenas no PDF */}
                 <div className="hidden print:block mb-10 border-b-4 border-black pb-4 text-black">
                     <h1 className="text-4xl font-black uppercase tracking-tighter">Relatório Estratégico de Performance</h1>
                     <div className="mt-4 grid grid-cols-2 text-sm">
@@ -158,11 +156,10 @@ const FinancialForecast: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Gráfico */}
                 <section className="bg-slate-800 p-4 rounded-lg shadow-lg mb-10 border border-white/10 print:border-black print:shadow-none chart-container">
                     <h2 className="font-bold mb-6 text-slate-300 print:text-black uppercase text-xs tracking-widest border-l-4 border-indigo-500 pl-3">Evolução do Fluxo de Caixa</h2>
                     <div className="h-[350px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorFat" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
@@ -180,7 +177,6 @@ const FinancialForecast: React.FC = () => {
                     </div>
                 </section>
 
-                {/* Tabelas de Detalhes - No PDF ficam uma abaixo da outra */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10 print:block">
                     <section className="bg-slate-800 rounded-md shadow-lg border border-white/5 print:border-none print:shadow-none print:mb-10">
                         <TableHeader title="DESPESAS OPERACIONAIS" />
@@ -251,7 +247,6 @@ const FinancialForecast: React.FC = () => {
                     </section>
                 </div>
 
-                {/* Consolidado e Saldo Final */}
                 <section className="mt-10 bg-slate-800 rounded-md shadow-xl border border-white/5 print:border-none print:shadow-none">
                     <TableHeader title="CONSOLIDADO GERAL DE RESULTADOS" />
                     <table className="w-full text-sm">

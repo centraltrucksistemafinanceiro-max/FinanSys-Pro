@@ -1,3 +1,4 @@
+
 import React, { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { FaturamentoContext } from '../contexts/FaturamentoContext';
 import { Faturamento as FaturamentoType } from '../types';
@@ -23,11 +24,12 @@ const Faturamento: React.FC = () => {
   const winManager = useContext(WindowManagerContext);
   const companyContext = useContext(CompanyContext);
   const dateInputRef = useRef<HTMLInputElement>(null);
-  
-  const today = new Date();
-  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
 
+  // Calcula datas do mês atual para o filtro padrão
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+  
   const initialFormState = {
     data: new Date().toISOString().split('T')[0],
     cliente: '',
@@ -40,10 +42,12 @@ const Faturamento: React.FC = () => {
 
   const [formState, setFormState] = useState(initialFormState);
   const [editingId, setEditingId] = useState<string | null>(null);
+  
+  // Revertido para filtrar por mês por padrão (diferente do Fluxo de Caixa)
   const [filters, setFilters] = useState({
     cliente: '',
-    startDate: firstDayOfMonth,
-    endDate: lastDayOfMonth,
+    startDate: firstDay,
+    endDate: lastDay,
   });
 
   const [clienteSuggestions, setClienteSuggestions] = useState<string[]>([]);
@@ -58,7 +62,6 @@ const Faturamento: React.FC = () => {
 
   const [faturamentos, setFaturamentos] = useState<FaturamentoType[]>([]);
   
-  // Modal state
   const [confirmationModal, setConfirmationModal] = useState<{
       isOpen: boolean;
       title: string;

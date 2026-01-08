@@ -1,3 +1,4 @@
+
 import React, { useContext, useMemo, useState, useEffect } from 'react';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
 import { SettingsContext } from '../contexts/SettingsContext';
@@ -106,7 +107,6 @@ const DashboardGeral: React.FC = () => {
                 { name: 'Faturamento S/ NF', value: totalFaturamentoSemNota }
             ]);
 
-            // Helper para extrair mês sem erro de fuso horário
             const getMonthIdx = (dateStr: string) => parseInt(dateStr.split('-')[1], 10) - 1;
 
             const monthlyEvo = Array.from({ length: 12 }, (_, i) => ({ name: getMonthShortName(i), 'Faturamento c/ NF': 0, 'Faturamento s/ NF': 0 }));
@@ -199,7 +199,7 @@ const DashboardGeral: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 <div className="lg:col-span-2 bg-slate-800/80 p-4 rounded-xl border border-white/5 shadow-2xl">
                     <h2 className="font-bold mb-4 text-slate-300 uppercase text-xs tracking-widest border-l-2 border-indigo-500 pl-2">Evolução Mensal ({currentYear})</h2>
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={300} minWidth={0}>
                         <AreaChart data={monthlyEvolutionData} margin={{ top: 5, right: 30, left: 30, bottom: 5 }}>
                             <defs>
                                 <linearGradient id="colorCNF" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
@@ -218,7 +218,7 @@ const DashboardGeral: React.FC = () => {
                 <div className="lg:col-span-1 bg-slate-800/80 p-4 rounded-xl border border-white/5 shadow-2xl flex flex-col">
                     <h2 className="font-bold mb-4 text-slate-300 uppercase text-xs tracking-widest border-l-2 border-indigo-500 pl-2">Composição</h2>
                     <div className="flex-grow flex items-center justify-center">
-                        <ResponsiveContainer width="100%" height={250}>
+                        <ResponsiveContainer width="100%" height={250} minWidth={0}>
                              <PieChart>
                                 <Pie 
                                     data={compositionData} 
@@ -243,7 +243,7 @@ const DashboardGeral: React.FC = () => {
 
             <div className="w-full bg-slate-800/80 p-4 rounded-xl border border-white/5 shadow-2xl mb-4">
                 <h2 className="font-bold mb-4 text-slate-300 uppercase text-xs tracking-widest border-l-2 border-indigo-500 pl-2">Performance Global ({currentYear})</h2>
-                 <ResponsiveContainer width="100%" height={280}>
+                 <ResponsiveContainer width="100%" height={280} minWidth={0}>
                     <BarChart data={faturamentoVsContasPagasData} margin={{ top: 5, right: 30, left: 30, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                         <XAxis dataKey="name" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />

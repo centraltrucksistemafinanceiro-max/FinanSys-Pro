@@ -1,3 +1,4 @@
+
 import React, { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { BoletoContext } from '../contexts/BoletoContext';
 import { CategoryContext } from '../contexts/CategoryContext';
@@ -28,8 +29,12 @@ const BoletoControl: React.FC = () => {
   const winManager = useContext(WindowManagerContext);
   const companyContext = useContext(CompanyContext);
   const descriptionInputRef = useRef<HTMLInputElement>(null);
+
+  // Calcula datas do mês atual para o filtro padrão
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
   
-  // Confirmation Modal State
   const [confirmationModal, setConfirmationModal] = useState<{
       isOpen: boolean;
       title: string;
@@ -51,17 +56,12 @@ const BoletoControl: React.FC = () => {
       }
   };
 
-  // Initial Load
   useEffect(() => {
     loadBoletos();
   }, [companyContext.currentCompany.id]);
 
   const getInitialCategory = () => (categories.length > 0 ? categories[0].name : '');
   
-  const today = new Date();
-  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
-
   const initialFormState = {
     date: new Date().toISOString().split('T')[0],
     description: '',
@@ -72,12 +72,16 @@ const BoletoControl: React.FC = () => {
 
   const [formState, setFormState] = useState(initialFormState);
   const [editingBoletoId, setEditingBoletoId] = useState<string | null>(null);
-   const [filters, setFilters] = useState({
+  
+  // Revertido para filtrar por mês por padrão (diferente do Fluxo de Caixa)
+  const [filters, setFilters] = useState({
     description: '',
-    startDate: firstDayOfMonth,
-    endDate: lastDayOfMonth,
+    startDate: firstDay,
+    endDate: lastDay,
     category: '',
   });
+
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' }>({ key: 'date', direction: 'descending' });
 
   const [descriptionSuggestions, setDescriptionSuggestions] = useState<string[]>([]);
   const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
@@ -85,7 +89,6 @@ const BoletoControl: React.FC = () => {
   const [viewMode, setViewMode] = useState<'single' | 'batch'>('single');
   const [batchData, setBatchData] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' }>({ key: 'date', direction: 'descending' });
   const [isPrinting, setIsPrinting] = useState(false);
   
   const isEditing = editingBoletoId !== null;

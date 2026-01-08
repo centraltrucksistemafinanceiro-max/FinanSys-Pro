@@ -1,3 +1,4 @@
+
 import React, { useContext, useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { TransactionContext } from '../contexts/TransactionContext';
 import { CompanyContext } from '../contexts/CompanyContext';
@@ -24,10 +25,6 @@ const CashFlow: React.FC = () => {
 
   const getInitialCategory = () => (categories.length > 0 ? categories[0].name : '');
 
-  const today = new Date();
-  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
-
   const initialFormState = {
     type: TransactionType.EXPENSE,
     date: new Date().toISOString().split('T')[0],
@@ -41,10 +38,11 @@ const CashFlow: React.FC = () => {
   const [formState, setFormState] = useState(initialFormState);
   const [editingTransactionId, setEditingTransactionId] = useState<string | null>(null);
   
+  // Alterado para iniciar vazio conforme solicitação do usuário
   const [filters, setFilters] = useState({ 
     description: '', 
-    startDate: firstDayOfMonth, 
-    endDate: lastDayOfMonth, 
+    startDate: '', 
+    endDate: '', 
     category: '', 
     paymentMethod: '' 
   });

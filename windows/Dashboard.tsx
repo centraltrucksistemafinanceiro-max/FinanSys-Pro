@@ -1,5 +1,4 @@
 
-
 import React, { useContext, useMemo, useState, useEffect } from 'react';
 import { TransactionContext } from '../contexts/TransactionContext';
 import { SettingsContext } from '../contexts/SettingsContext';
@@ -86,7 +85,6 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
         setIsLoading(true);
-        // FIX: The `Company` type has an `id` property, not `companyId`. This corrects the destructuring to get the company ID.
         const { id: companyId } = companyContext.currentCompany;
         const filters = { startDate: dateRange.startDate, endDate: dateRange.endDate };
         
@@ -171,7 +169,7 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="p-4 rounded-lg bg-white dark:bg-slate-800 shadow-md">
           <h3 className="font-semibold mb-4">Entradas vs. Saídas</h3>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={300} minWidth={0}>
             <BarChart data={barChartData}>
               <XAxis dataKey="name" stroke={settings.theme === 'dark' ? '#94a3b8' : '#64748b'} />
               <YAxis stroke={settings.theme === 'dark' ? '#94a3b8' : '#64748b'} tickFormatter={formatCurrency} />
@@ -188,7 +186,7 @@ const Dashboard: React.FC = () => {
         <div className="p-4 rounded-lg bg-white dark:bg-slate-800 shadow-md">
           <h3 className="font-semibold mb-4">Despesas por Categoria</h3>
           {pieChartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={300} minWidth={0}>
               <PieChart>
                 <Pie
                   {...({

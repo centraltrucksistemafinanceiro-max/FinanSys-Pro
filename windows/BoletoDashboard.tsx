@@ -1,5 +1,4 @@
 
-
 import React, { useContext, useMemo, useState, useEffect } from 'react';
 import { BoletoContext } from '../contexts/BoletoContext';
 import { SettingsContext } from '../contexts/SettingsContext';
@@ -92,7 +91,6 @@ const BoletoDashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
         setIsLoading(true);
-        // FIX: The `Company` type has an `id` property, not `companyId`. This corrects the destructuring to get the company ID.
         const { id: companyId } = companyContext.currentCompany;
         const filters = { startDate: dateRange.startDate, endDate: dateRange.endDate, category: selectedCategory };
 
@@ -101,7 +99,6 @@ const BoletoDashboard: React.FC = () => {
 
         const allBoletos = await boletoContext.queryBoletos({ companyId, filters: { startDate: dateRange.startDate, endDate: dateRange.endDate } });
 
-        // Pie chart should not be filtered by category selection
         const pieBoletos = selectedCategory ? await boletoContext.queryBoletos({ companyId, filters: { startDate: dateRange.startDate, endDate: dateRange.endDate } }) : allBoletos;
         const expenseByCategory = pieBoletos.reduce((acc, b) => {
             const totalAmount = (Number(b.amountWithInvoice) || 0) + (Number(b.amountWithoutInvoice) || 0);
@@ -196,7 +193,7 @@ const BoletoDashboard: React.FC = () => {
         <div className="p-4 rounded-lg bg-white dark:bg-slate-800 shadow-md h-[350px]">
           <h3 className="font-semibold mb-4">Despesas por Categoria</h3>
           {pieChartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <PieChart>
                 <Pie
                   {...({

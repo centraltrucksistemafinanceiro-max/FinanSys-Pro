@@ -1,3 +1,4 @@
+
 import React, { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { FaturamentoSemNotaContext } from '../contexts/FaturamentoSemNotaContext';
 import { FaturamentoSemNota as FaturamentoSemNotaType, FaturamentoSemNotaCategoria } from '../types';
@@ -23,11 +24,12 @@ const FaturamentoSemNota: React.FC = () => {
   const winManager = useContext(WindowManagerContext);
   const companyContext = useContext(CompanyContext);
   const dateInputRef = useRef<HTMLInputElement>(null);
-  
-  const today = new Date();
-  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
 
+  // Calcula datas do mês atual para o filtro padrão
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+  
   const initialFormState = {
     data: new Date().toISOString().split('T')[0],
     nOrcamento: '',
@@ -38,10 +40,12 @@ const FaturamentoSemNota: React.FC = () => {
 
   const [formState, setFormState] = useState(initialFormState);
   const [editingId, setEditingId] = useState<string | null>(null);
+  
+  // Revertido para filtrar por mês por padrão (diferente do Fluxo de Caixa)
   const [filters, setFilters] = useState({
     nOrcamento: '',
-    startDate: firstDayOfMonth,
-    endDate: lastDayOfMonth,
+    startDate: firstDay,
+    endDate: lastDay,
     category: '',
   });
   
@@ -57,7 +61,6 @@ const FaturamentoSemNota: React.FC = () => {
 
   const [faturamentos, setFaturamentos] = useState<FaturamentoSemNotaType[]>([]);
   
-  // Modal state
   const [confirmationModal, setConfirmationModal] = useState<{
       isOpen: boolean;
       title: string;
@@ -146,7 +149,6 @@ const FaturamentoSemNota: React.FC = () => {
         break;
       case 'ArrowUp':
         e.preventDefault();
-        // FIX: Corrected variable name from 'descriptionSuggestions' to 'condicaoSuggestions' to fix compilation error.
         setHighlightedIndex(prev => (prev - 1 + condicaoSuggestions.length) % condicaoSuggestions.length);
         break;
       case 'Enter':
@@ -186,7 +188,7 @@ const FaturamentoSemNota: React.FC = () => {
       if (isDuplicate) {
         winManager.addNotification({ 
             title: "Duplicado", 
-            message: `O Nº de Orçamento "${trimmedNOrcamento}" já existe.`, 
+            message: `O Nº de Orçamento "${trimmedNOrcamento}" already exists.`, 
             type: "error"
         });
         return;
