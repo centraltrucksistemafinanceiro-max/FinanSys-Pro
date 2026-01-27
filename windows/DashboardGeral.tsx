@@ -61,6 +61,21 @@ const DashboardGeral: React.FC = () => {
     const [currentYear, setCurrentYear] = useState(today.getFullYear());
     const [isLoading, setIsLoading] = useState(true);
 
+    const years = useMemo(() => {
+        const startYear = 2020;
+        const yearsList = [];
+        for (let y = today.getFullYear() + 1; y >= startYear; y--) {
+            yearsList.push(y);
+        }
+        return yearsList;
+    }, []);
+
+    const handleYearChange = (year: number) => {
+        setCurrentYear(year);
+        setStartDate(`${year}-01-01`);
+        setEndDate(`${year}-12-31`);
+    };
+
     const [kpiData, setKpiData] = useState({ faturamentoTotal: 0, balancoCaixa: 0, contasPagas: 0, contasVencidas: 0, contasPendentes: 0, lucroRealizado: 0 });
     const [monthlyEvolutionData, setMonthlyEvolutionData] = useState<any[]>([]);
     const [compositionData, setCompositionData] = useState<any[]>([]);
@@ -174,13 +189,27 @@ const DashboardGeral: React.FC = () => {
         <div className="p-4 bg-slate-900 h-full overflow-y-auto text-slate-200 font-sans printable-dashboard custom-scrollbar">
             <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                  <h1 className="text-2xl font-bold tracking-tight">FinanSys <span className="text-indigo-400">Pro v3.0</span></h1>
-                 <div className="flex items-center gap-4 no-print">
-                    <div className="flex items-center gap-2 bg-slate-800/50 p-1 rounded-lg border border-white/5">
-                        <button onClick={() => setDateFilter('month')} className="px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 rounded-md transition-colors uppercase tracking-wider">Mês</button>
-                        <button onClick={() => setDateFilter('year')} className="px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 rounded-md transition-colors uppercase tracking-wider">Ano</button>
+                  <div className="flex items-center gap-4 no-print flex-wrap">
+                    <div className="flex items-center gap-2 bg-slate-800/50 p-1.5 rounded-lg border border-white/5">
+                        <div className="flex items-center gap-2 mr-2">
+                            <label className="text-[10px] font-black text-indigo-400 uppercase">Ano:</label>
+                            <select 
+                                value={currentYear} 
+                                onChange={(e) => handleYearChange(Number(e.target.value))}
+                                className="p-1 px-2 text-xs font-bold rounded bg-slate-700 border border-slate-600 outline-none text-white hover:border-indigo-500 transition-colors"
+                            >
+                                {years.map(year => (
+                                    <option key={year} value={year}>{year}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="w-px h-4 bg-slate-700 mx-1 hidden sm:block"></div>
+                        <button onClick={() => setDateFilter('month')} className="px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 rounded-md transition-colors uppercase tracking-wider">Mês Atual</button>
+                        <button onClick={() => setDateFilter('year')} className="px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 rounded-md transition-colors uppercase tracking-wider">Ano Atual</button>
                     </div>
                     <div className="flex items-center gap-2">
                         <input type="date" name="startDate" value={startDate} onChange={handleDateInputChange} className="p-2 text-xs rounded bg-slate-800 border border-slate-600 focus:ring-1 focus:ring-indigo-500 outline-none" />
+                        <span className="text-slate-500 text-xs">até</span>
                         <input type="date" name="endDate" value={endDate} onChange={handleDateInputChange} className="p-2 text-xs rounded bg-slate-800 border border-slate-600 focus:ring-1 focus:ring-indigo-500 outline-none" />
                     </div>
                     <button onClick={() => window.print()} className="p-2 bg-slate-800 rounded-md shadow-sm hover:bg-slate-700 border border-white/5 transition-colors" title="Imprimir"><PrinterIcon className="w-5 h-5 text-slate-300" /></button>

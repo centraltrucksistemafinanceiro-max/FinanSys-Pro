@@ -109,7 +109,7 @@
             width: 100% !important;
             margin-bottom: 30px !important;
             padding: 0 !important;
-            max-width: 19cm !important;
+            max-width: 20cm !important; /* Aumentado para ocupar quase o papel todo */
         }
 
         /* 5. TABELAS E GRÁFICOS */
@@ -123,8 +123,8 @@
         
         th, td {
             border: 1px solid #333 !important;
-            padding: 8px !important;
-            font-size: 9pt !important;
+            padding: 10px !important; /* Aumentado */
+            font-size: 11pt !important; /* Aumentado de 9pt para 11pt */
             color: black !important;
             background: white !important;
         }
@@ -133,25 +133,40 @@
             display: block !important; /* Em impressoras portrait, o grid costuma quebrar se for 1fr 1fr */
         }
 
-        /* GRÁFICOS (RECHARTS) */
+        /* GRÁFICOS (RECHARTS) - REFINADO */
         .chart-container {
             width: 100% !important;
-            max-width: 18cm !important;
-            height: 400px !important;
-            margin: 20px auto !important;
+            max-width: 20cm !important; /* Aumentado */
+            height: 500px !important; /* Mais alto */
+            margin: 30px auto !important;
             page-break-inside: avoid !important;
             background: white !important;
             display: block !important;
+            position: relative !important;
         }
 
         .recharts-responsive-container {
             width: 100% !important;
-            height: 400px !important;
+            height: 450px !important;
         }
 
-        svg {
-            width: 100% !important;
-            height: 400px !important;
+        /* Corrige textos e cores no gráfico para impressão */
+        .recharts-cartesian-axis-tick-value {
+            fill: #000 !important;
+            font-size: 10pt !important; /* Aumentado */
+            font-weight: bold !important;
+        }
+
+        .recharts-legend-item-text {
+            color: #000 !important;
+            font-size: 12pt !important; /* Aumentado */
+            font-weight: bold !important;
+        }
+
+        /* Impede que os ícones da legenda fiquem gigantes */
+        .recharts-legend-icon {
+            width: 14px !important;
+            height: 14px !important;
         }
 
         /* 6. CORES E AJUSTES FINAIS */

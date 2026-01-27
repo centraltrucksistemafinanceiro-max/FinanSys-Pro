@@ -34,10 +34,38 @@ const FinancialForecast: React.FC = () => {
     const settings = useContext(SettingsContext);
 
     const currentYear = new Date().getFullYear();
+    const [selectedYear, setSelectedYear] = useState(currentYear);
     const [rangeStart, setRangeStart] = useState(`${currentYear}-01`);
     const [rangeEnd, setRangeEnd] = useState(`${currentYear}-12`);
     const [monthlyData, setMonthlyData] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isPrinting, setIsPrinting] = useState(false);
+
+    const years = useMemo(() => {
+        const startYear = 2020;
+        const yearsList = [];
+        for (let y = currentYear + 1; y >= startYear; y--) {
+            yearsList.push(y);
+        }
+        return yearsList;
+    }, [currentYear]);
+
+    const handleYearChange = (year: number) => {
+        setSelectedYear(year);
+        setRangeStart(`${year}-01`);
+        setRangeEnd(`${year}-12`);
+    };
+
+    useEffect(() => {
+        const handleBeforePrint = () => setIsPrinting(true);
+        const handleAfterPrint = () => setIsPrinting(false);
+        window.addEventListener('beforeprint', handleBeforePrint);
+        window.addEventListener('afterprint', handleAfterPrint);
+        return () => {
+            window.removeEventListener('beforeprint', handleBeforePrint);
+            window.removeEventListener('afterprint', handleAfterPrint);
+        };
+    }, []);
 
     if (!boletoContext || !faturamentoContext || !faturamentoSemNotaContext || !settings || !companyContext) return null;
 
@@ -130,11 +158,28 @@ const FinancialForecast: React.FC = () => {
                 <div className="flex flex-wrap items-center justify-between mb-8 gap-4 no-print">
                     <h1 className="text-2xl font-bold text-white uppercase tracking-tight">Projeção Financeira</h1>
                     <div className="flex items-center gap-4 flex-wrap">
-                        <div className="flex items-center gap-2">
-                            <label className="text-xs font-bold text-slate-500 uppercase">Período:</label>
-                            <input type="month" value={rangeStart} onChange={(e) => setRangeStart(e.target.value)} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 outline-none" />
-                            <span className="text-slate-500">até</span>
-                            <input type="month" value={rangeEnd} onChange={(e) => setRangeEnd(e.target.value)} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 outline-none" />
+                        <div className="flex items-center gap-4 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
+                            <div className="flex items-center gap-2">
+                                <label className="text-xs font-black text-indigo-400 uppercase">Ano Base:</label>
+                                <select 
+                                    value={selectedYear} 
+                                    onChange={(e) => handleYearChange(Number(e.target.value))}
+                                    className="p-2 text-sm font-bold rounded bg-slate-700 border border-slate-600 outline-none text-white hover:border-indigo-500 transition-colors"
+                                >
+                                    {years.map(year => (
+                                        <option key={year} value={year}>{year}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            
+                            <div className="w-px h-6 bg-slate-700 mx-2 hidden sm:block"></div>
+
+                            <div className="flex items-center gap-2">
+                                <label className="text-xs font-bold text-slate-500 uppercase">Período Customizado:</label>
+                                <input type="month" value={rangeStart} onChange={(e) => setRangeStart(e.target.value)} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 outline-none" />
+                                <span className="text-slate-500">até</span>
+                                <input type="month" value={rangeEnd} onChange={(e) => setRangeEnd(e.target.value)} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 outline-none" />
+                            </div>
                         </div>
                         <button
                             onClick={() => window.print()}
@@ -158,22 +203,43 @@ const FinancialForecast: React.FC = () => {
 
                 <section className="bg-slate-800 p-4 rounded-lg shadow-lg mb-10 border border-white/10 print:border-black print:shadow-none chart-container">
                     <h2 className="font-bold mb-6 text-slate-300 print:text-black uppercase text-xs tracking-widest border-l-4 border-indigo-500 pl-3">Evolução do Fluxo de Caixa</h2>
-                    <div className="h-[350px] w-full">
-                        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                    <div className="h-[450px] w-full flex justify-center">
+                        {isPrinting ? (
+                            <AreaChart width={900} height={450} data={chartData} margin={{ top: 20, right: 20, left: 10, bottom: 60 }}>
                                 <defs>
-                                    <linearGradient id="colorFat" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
-                                    <linearGradient id="colorDesp" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/><stop offset="95%" stopColor="#ef4444" stopOpacity={0}/></linearGradient>
+                                    <linearGradient id="colorFatPrint" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#059669" stopOpacity={0.8}/>
+                                        <stop offset="95%" stopColor="#059669" stopOpacity={0.2}/>
+                                    </linearGradient>
+                                    <linearGradient id="colorDespPrint" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#dc2626" stopOpacity={0.8}/>
+                                        <stop offset="95%" stopColor="#dc2626" stopOpacity={0.2}/>
+                                    </linearGradient>
                                 </defs>
-                                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} />
-                                <YAxis stroke="#94a3b8" fontSize={11} tickFormatter={(v) => `R$ ${v/1000}k`} />
-                                <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Legend verticalAlign="top" height={40}/>
-                                <Area type="monotone" name="Faturamento" dataKey="Faturamento" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorFat)" />
-                                <Area type="monotone" name="Despesa" dataKey="Despesa" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorDesp)" />
+                                <XAxis dataKey="name" stroke="#000" fontSize={12} tick={{fill: '#000', fontWeight: 'bold'}} dy={15} />
+                                <YAxis stroke="#000" fontSize={12} tick={{fill: '#000', fontWeight: 'bold'}} tickFormatter={(v) => `R$ ${v/1000}k`} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#ccc" vertical={false} />
+                                <Legend verticalAlign="top" height={70} iconType="rect" iconSize={15} />
+                                <Area type="monotone" name="Faturamento" dataKey="Faturamento" stroke="#059669" strokeWidth={3} fillOpacity={1} fill="url(#colorFatPrint)" />
+                                <Area type="monotone" name="Despesa" dataKey="Despesa" stroke="#dc2626" strokeWidth={3} fillOpacity={1} fill="url(#colorDespPrint)" />
                             </AreaChart>
-                        </ResponsiveContainer>
+                        ) : (
+                            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorFat" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+                                        <linearGradient id="colorDesp" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/><stop offset="95%" stopColor="#ef4444" stopOpacity={0}/></linearGradient>
+                                    </defs>
+                                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} />
+                                    <YAxis stroke="#94a3b8" fontSize={11} tickFormatter={(v) => `R$ ${v/1000}k`} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Legend verticalAlign="top" height={40}/>
+                                    <Area type="monotone" name="Faturamento" dataKey="Faturamento" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorFat)" />
+                                    <Area type="monotone" name="Despesa" dataKey="Despesa" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorDesp)" />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        )}
                     </div>
                 </section>
 
