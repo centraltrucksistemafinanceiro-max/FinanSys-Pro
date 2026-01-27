@@ -76,11 +76,10 @@
             visibility: hidden !important;
         }
 
-        /* 3. DESMANTELAR O SISTEMA DE JANELAS (RND) */
+        /* 3. DESMANTELAR O SISTEMA DE JANELAS (RND) - Apenas o necessário */
         .window-frame, 
-        div[class*="react-draggable"],
-        div[style*="position: absolute"],
-        div[style*="z-index"] {
+        .react-draggable,
+        div[class*="react-draggable"] {
             position: static !important;
             transform: none !important;
             width: 100% !important;
@@ -88,7 +87,7 @@
             display: block !important;
             box-shadow: none !important;
             border: none !important;
-            margin: 0 !important;
+            margin: 0 0 30px 0 !important;
             padding: 0 !important;
             overflow: visible !important;
         }
@@ -148,23 +147,34 @@
             display: block !important;
         }
 
-        /* 6. REGRAS DE QUEBRA DE PÁGINA */
+        /* 6. REGRAS DE QUEBRA DE PÁGINA E ESPAÇAMENTO */
         section, .bg-slate-800, table, .chart-container {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
-            margin-bottom: 20px !important;
+            margin-bottom: 40px !important;
+            clear: both !important;
+            display: block !important;
+        }
+
+        /* Garante que o container do gráfico tenha espaço real */
+        .chart-container div[class*="h-"] {
+            height: 400px !important;
         }
 
         .text-green-400 { color: #008000 !important; font-weight: bold !important; }
         .text-red-400 { color: #ff0000 !important; font-weight: bold !important; }
 
-        /* FIX PARA GRÁFICOS (RECHARTS) */
+        /* FIX PARA GRÁFICOS (RECHARTS) - RESOLVE CORTE HORIZONTAL */
         .chart-container {
             width: 100% !important;
+            max-width: 18cm !important; /* Limite seguro para A4 com margens */
             height: auto !important;
             min-height: 400px !important;
             display: block !important;
             page-break-inside: avoid !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            padding: 0 !important;
         }
 
         .recharts-responsive-container {
@@ -174,10 +184,21 @@
             min-height: 0 !important;
         }
 
+        /* Garante que o SVG não "fuja" da caixa */
         svg {
             width: 100% !important;
             height: auto !important;
             max-width: 100% !important;
+            display: block !important;
+        }
+        
+        /* Remove paddings internos que empurram o conteúdo para fora do papel */
+        .printable-dashboard > div {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            width: 100% !important;
         }
       }
     </style>
