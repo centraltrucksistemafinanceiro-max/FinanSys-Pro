@@ -157,6 +157,28 @@
 
         .text-green-400 { color: #008000 !important; font-weight: bold !important; }
         .text-red-400 { color: #ff0000 !important; font-weight: bold !important; }
+
+        /* FIX PARA GRÁFICOS (RECHARTS) */
+        .chart-container {
+            width: 100% !important;
+            height: auto !important;
+            min-height: 400px !important;
+            display: block !important;
+            page-break-inside: avoid !important;
+        }
+
+        .recharts-responsive-container {
+            width: 100% !important;
+            height: 400px !important;
+            min-width: 0 !important;
+            min-height: 0 !important;
+        }
+
+        svg {
+            width: 100% !important;
+            height: auto !important;
+            max-width: 100% !important;
+        }
       }
     </style>
   <script type="importmap">
