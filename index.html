@@ -51,35 +51,29 @@
 
       @media print {
         @page {
-            margin: 1.5cm;
+            margin: 1cm;
             size: a4 portrait;
         }
 
-        /* 1. RESET RADICAL: Remove tudo que trava a altura da página */
-        html, body, #root, .App, [class*="h-screen"], [class*="w-screen"], [class*="h-full"], [class*="h-min"] {
+        /* 1. RESET BASE */
+        html, body, #root, .App {
             height: auto !important;
-            min-height: 0 !important;
-            width: 100% !important;
             overflow: visible !important;
-            position: static !important;
             background: white !important;
             color: black !important;
-            margin: 0 !important;
-            padding: 0 !important;
+            width: 100% !important;
         }
 
-        /* 2. ESCONDER INTERFACE DO SISTEMA */
+        /* 2. LIMPEZA */
         .taskbar, header, .window-controls, .no-print, button, 
         .resize-handle, .desktop-icons, .desktop-wallpaper, 
-        .absolute.inset-0, .backdrop-blur-md {
+        .backdrop-blur-md, footer, .absolute.inset-0 {
             display: none !important;
             visibility: hidden !important;
         }
 
-        /* 3. DESMANTELAR O SISTEMA DE JANELAS (RND) - Apenas o necessário */
-        .window-frame, 
-        .react-draggable,
-        div[class*="react-draggable"] {
+        /* 3. ESTRUTURA DE JANELA PARA IMPRESSÃO */
+        .window-frame, .react-draggable, div[class*="react-draggable"] {
             position: static !important;
             transform: none !important;
             width: 100% !important;
@@ -92,8 +86,8 @@
             overflow: visible !important;
         }
 
-        /* 4. FORÇAR CONTEÚDO A OCUPAR O PAPEL TODO */
-        main, .overflow-auto, .overflow-y-auto, .overflow-x-auto, [class*="overflow-"], .flex-grow, .flex-1 {
+        /* 4. LAYOUT DO CONTEÚDO */
+        main, [class*="overflow-"], .flex-grow, .flex-1 {
             overflow: visible !important;
             height: auto !important;
             max-height: none !important;
@@ -105,100 +99,75 @@
             background-color: white !important;
             color: black !important;
             padding: 0 !important;
-            display: block !important;
             width: 100% !important;
-            height: auto !important;
-            min-height: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+        }
+        
+        .printable-dashboard > div {
+            width: 100% !important;
+            margin-bottom: 30px !important;
+            padding: 0 !important;
+            max-width: 19cm !important;
         }
 
-        /* Evita que textos longos sejam cortados com reticências no papel */
-        .truncate, [class*="truncate"] {
-            overflow: visible !important;
-            text-overflow: clip !important;
-            white-space: normal !important;
-            max-width: none !important;
-        }
-
-        /* 5. AJUSTES DE ELEMENTOS VISUAIS PARA O PDF */
-        .bg-slate-900, .bg-slate-800, .bg-slate-700 {
-            background-color: transparent !important;
-            color: black !important;
-            border: none !important;
-        }
-
-        /* Força tabelas a ocuparem 100% da largura e terem bordas pretas finas */
+        /* 5. TABELAS E GRÁFICOS */
         table {
-            border: 1px solid #000 !important;
-            border-collapse: collapse !important;
             width: 100% !important;
-            margin-bottom: 25px !important;
+            border-collapse: collapse !important;
+            border: 1px solid #333 !important;
+            margin: 15px 0 !important;
+            page-break-inside: auto !important;
         }
         
         th, td {
-            border: 1px solid #000 !important;
-            padding: 5px 8px !important;
-            color: #000 !important;
-            font-size: 10pt !important;
+            border: 1px solid #333 !important;
+            padding: 8px !important;
+            font-size: 9pt !important;
+            color: black !important;
             background: white !important;
         }
-
-        /* Empilha grids lateralmente para caber na largura do A4 */
+        
         .grid {
-            display: block !important;
+            display: block !important; /* Em impressoras portrait, o grid costuma quebrar se for 1fr 1fr */
         }
 
-        /* 6. REGRAS DE QUEBRA DE PÁGINA E ESPAÇAMENTO */
-        section, .bg-slate-800, table, .chart-container {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-            margin-bottom: 40px !important;
-            clear: both !important;
-            display: block !important;
-        }
-
-        /* Garante que o container do gráfico tenha espaço real */
-        .chart-container div[class*="h-"] {
-            height: 400px !important;
-        }
-
-        .text-green-400 { color: #008000 !important; font-weight: bold !important; }
-        .text-red-400 { color: #ff0000 !important; font-weight: bold !important; }
-
-        /* FIX PARA GRÁFICOS (RECHARTS) - RESOLVE CORTE HORIZONTAL */
+        /* GRÁFICOS (RECHARTS) */
         .chart-container {
             width: 100% !important;
-            max-width: 18cm !important; /* Limite seguro para A4 com margens */
-            height: auto !important;
-            min-height: 400px !important;
-            display: block !important;
+            max-width: 18cm !important;
+            height: 400px !important;
+            margin: 20px auto !important;
             page-break-inside: avoid !important;
-            margin-left: auto !important;
-            margin-right: auto !important;
-            padding: 0 !important;
+            background: white !important;
+            display: block !important;
         }
 
         .recharts-responsive-container {
             width: 100% !important;
             height: 400px !important;
-            min-width: 0 !important;
-            min-height: 0 !important;
         }
 
-        /* Garante que o SVG não "fuja" da caixa */
         svg {
             width: 100% !important;
-            height: auto !important;
-            max-width: 100% !important;
-            display: block !important;
+            height: 400px !important;
+        }
+
+        /* 6. CORES E AJUSTES FINAIS */
+        .text-green-400, .text-green-300 { color: #006400 !important; font-weight: bold !important; }
+        .text-red-400, .text-red-300 { color: #8b0000 !important; font-weight: bold !important; }
+        .bg-slate-800, .bg-slate-700, .bg-slate-900 {
+            background-color: transparent !important;
+            border: 1px solid #e2e8f0 !important;
+            color: black !important;
         }
         
-        /* Remove paddings internos que empurram o conteúdo para fora do papel */
-        .printable-dashboard > div {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-            margin-left: 0 !important;
-            margin-right: 0 !important;
-            width: 100% !important;
+        .truncate, [class*="truncate"] {
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            max-width: none !important;
         }
       }
     </style>
