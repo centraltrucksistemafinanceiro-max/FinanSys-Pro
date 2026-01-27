@@ -56,7 +56,7 @@
         }
 
         /* 1. RESET RADICAL: Remove tudo que trava a altura da página */
-        html, body, #root, .App, [class*="h-screen"], [class*="w-screen"] {
+        html, body, #root, .App, [class*="h-screen"], [class*="w-screen"], [class*="h-full"], [class*="h-min"] {
             height: auto !important;
             min-height: 0 !important;
             width: 100% !important;
@@ -94,11 +94,12 @@
         }
 
         /* 4. FORÇAR CONTEÚDO A OCUPAR O PAPEL TODO */
-        main, .overflow-auto, .overflow-y-auto {
+        main, .overflow-auto, .overflow-y-auto, .overflow-x-auto, [class*="overflow-"], .flex-grow, .flex-1 {
             overflow: visible !important;
             height: auto !important;
             max-height: none !important;
             display: block !important;
+            flex: none !important;
         }
 
         .printable-dashboard {
@@ -107,6 +108,16 @@
             padding: 0 !important;
             display: block !important;
             width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+        }
+
+        /* Evita que textos longos sejam cortados com reticências no papel */
+        .truncate, [class*="truncate"] {
+            overflow: visible !important;
+            text-overflow: clip !important;
+            white-space: normal !important;
+            max-width: none !important;
         }
 
         /* 5. AJUSTES DE ELEMENTOS VISUAIS PARA O PDF */
