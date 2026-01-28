@@ -7,6 +7,8 @@ import { exportToXLSX } from '../utils/xlsxUtils';
 import { WindowManagerContext } from '../contexts/WindowManagerContext';
 import { ExportIcon, PrinterIcon } from '../components/icons/AppIcons';
 import { CompanyContext } from '../contexts/CompanyContext';
+import { PrivacyContext } from '../contexts/PrivacyContext';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -23,7 +25,10 @@ const Faturamento: React.FC = () => {
   const settings = useContext(SettingsContext);
   const winManager = useContext(WindowManagerContext);
   const companyContext = useContext(CompanyContext);
+  const { isValuesVisible, toggleVisibility } = useContext(PrivacyContext)!;
   const dateInputRef = useRef<HTMLInputElement>(null);
+  
+  const displayValue = (val: number) => isValuesVisible ? formatCurrency(val) : '••••';
 
   // Calcula datas do mês atual para o filtro padrão
   const now = new Date();
@@ -434,8 +439,11 @@ const Faturamento: React.FC = () => {
             <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" />
           </div>
           <div className="flex items-center gap-4">
-            <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total Filtrado</span><p className="text-2xl font-bold text-green-400">{formatCurrency(totalFiltrado)}</p></div>
+            <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total Filtrado</span><p className="text-2xl font-bold text-green-400">{displayValue(totalFiltrado)}</p></div>
             <div className="flex items-center gap-2 no-print">
+                <button onClick={toggleVisibility} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title={isValuesVisible ? "Ocultar" : "Mostrar"}>
+                    {isValuesVisible ? <EyeIcon className="w-5 h-5" /> : <EyeSlashIcon className="w-5 h-5" />}
+                </button>
                 <button onClick={handlePrint} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title="Imprimir / Salvar PDF"><PrinterIcon className="w-5 h-5" /></button>
                 <button onClick={() => exportToXLSX(dataForExport, 'faturamento_com_nota.xlsx')} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors"><ExportIcon className="w-5 h-5 mr-2" />Exportar XLSX</button>
             </div>
@@ -464,7 +472,7 @@ const Faturamento: React.FC = () => {
                     <td className="px-4 py-2 font-medium uppercase text-slate-200 truncate" style={{maxWidth: '200px'}}>{f.cliente}</td>
                     <td className="px-4 py-2">{f.nNotaServico || '-'}</td>
                     <td className="px-4 py-2">{f.nNotaPecas || '-'}</td>
-                    <td className="px-4 py-2 text-right font-medium text-green-400">{formatCurrency(f.valor)}</td>
+                    <td className="px-4 py-2 text-right font-medium text-green-400">{displayValue(f.valor)}</td>
                     <td className="px-4 py-2 text-center">{f.quantidade}</td>
                     <td className="px-4 py-2 truncate" style={{maxWidth: '120px'}}>{f.condicoesPagamento}</td>
                     <td className="px-4 py-2 no-print">

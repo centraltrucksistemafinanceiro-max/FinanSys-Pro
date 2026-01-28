@@ -8,6 +8,8 @@ import { SettingsContext } from '../contexts/SettingsContext';
 import { exportToXLSX } from '../utils/xlsxUtils';
 import { WindowManagerContext } from '../contexts/WindowManagerContext';
 import { ExportIcon, PrinterIcon } from '../components/icons/AppIcons';
+import { PrivacyContext } from '../contexts/PrivacyContext';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { formatCurrency, formatDateForDisplay } from '../utils/formatters';
 import { PAYMENT_METHODS } from '../constants';
 
@@ -17,7 +19,10 @@ const CashFlow: React.FC = () => {
   const categoryContext = useContext(CategoryContext);
   const settings = useContext(SettingsContext);
   const winManager = useContext(WindowManagerContext);
+  const { isValuesVisible, toggleVisibility } = useContext(PrivacyContext)!;
   const dateInputRef = useRef<HTMLInputElement>(null);
+  
+  const displayValue = (val: number) => isValuesVisible ? formatCurrency(val) : '••••';
     
   if (!transactionContext || !settings || !winManager || !categoryContext || !companyContext) return null;
   const { queryTransactions, addTransaction, deleteTransaction, updateTransaction, getBalanceUntilDate } = transactionContext;
@@ -325,21 +330,24 @@ const CashFlow: React.FC = () => {
           <div className="flex items-center gap-4">
               <div className="text-right">
                   <span className="text-xs text-slate-400 uppercase">Saldo Dia Anterior</span>
-                  <p className="text-xl font-bold text-slate-300">{formatCurrency(previousDayBalance)}</p>
+                  <p className="text-xl font-bold text-slate-300">{displayValue(previousDayBalance)}</p>
               </div>
               <div className="text-right">
                   <span className="text-xs text-slate-400 uppercase">Total Entradas</span>
-                  <p className="text-xl font-bold text-green-400">{formatCurrency(totalEntradas)}</p>
+                  <p className="text-xl font-bold text-green-400">{displayValue(totalEntradas)}</p>
               </div>
               <div className="text-right">
                   <span className="text-xs text-slate-400 uppercase">Total Saídas</span>
-                  <p className="text-xl font-bold text-red-400">{formatCurrency(totalSaidas)}</p>
+                  <p className="text-xl font-bold text-red-400">{displayValue(totalSaidas)}</p>
               </div>
               <div className="text-right">
                   <span className="text-xs text-slate-400 uppercase">Saldo Filtrado</span>
-                  <p className={`text-2xl font-bold ${(totalEntradas - totalSaidas) >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatCurrency(totalEntradas - totalSaidas)}</p>
+                  <p className={`text-2xl font-bold ${(totalEntradas - totalSaidas) >= 0 ? 'text-green-400' : 'text-red-400'}`}>{displayValue(totalEntradas - totalSaidas)}</p>
               </div>
               <div className="flex items-center gap-2 no-print">
+                <button onClick={toggleVisibility} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title={isValuesVisible ? "Ocultar" : "Mostrar"}>
+                    {isValuesVisible ? <EyeIcon className="w-5 h-5" /> : <EyeSlashIcon className="w-5 h-5" />}
+                </button>
                 <button onClick={handlePrint} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title="Imprimir / Salvar PDF"><PrinterIcon className="w-5 h-5" /></button>
                 <button onClick={() => exportToXLSX(dataForExport, 'fluxo_de_caixa.xlsx')} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors"><ExportIcon className="w-5 h-5 mr-2" />Exportar XLSX</button>
               </div>
@@ -375,7 +383,7 @@ const CashFlow: React.FC = () => {
                             </span>
                           </td>
                           <td className={`px-6 py-4 text-right font-medium ${t.type === 'Entrada' ? 'text-green-400' : 'text-red-400'}`}>
-                              {formatCurrency(t.amount)}
+                              {displayValue(t.amount)}
                           </td>
                           <td className="px-6 py-4 no-print">
                               <div className="flex justify-center items-center gap-4">

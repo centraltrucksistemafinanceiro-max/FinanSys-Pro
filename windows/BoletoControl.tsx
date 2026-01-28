@@ -9,6 +9,8 @@ import { WindowManagerContext } from '../contexts/WindowManagerContext';
 import { ExportIcon, PrinterIcon } from '../components/icons/AppIcons';
 import { formatCurrency, formatDateForDisplay, parseCurrency, parseDateFromBr } from '../utils/formatters';
 import { CompanyContext } from '../contexts/CompanyContext';
+import { PrivacyContext } from '../contexts/PrivacyContext';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 const getStatusBadge = (status: BoletoStatus) => {
     switch (status) {
@@ -28,7 +30,10 @@ const BoletoControl: React.FC = () => {
   const settings = useContext(SettingsContext);
   const winManager = useContext(WindowManagerContext);
   const companyContext = useContext(CompanyContext);
+  const { isValuesVisible, toggleVisibility } = useContext(PrivacyContext)!;
   const descriptionInputRef = useRef<HTMLInputElement>(null);
+
+  const displayValue = (val: number) => isValuesVisible ? formatCurrency(val) : '••••';
 
   // Calcula datas do mês atual para o filtro padrão
   const now = new Date();
@@ -310,7 +315,7 @@ const BoletoControl: React.FC = () => {
     const totalAmount = (Number(boleto.amountWithInvoice) || 0) + (Number(boleto.amountWithoutInvoice) || 0);
     openConfirmation(
         "Confirmar Pagamento",
-        `Confirmar o pagamento para "${boleto.description}" no valor de ${formatCurrency(totalAmount)}?`,
+        `Confirmar o pagamento para "${boleto.description}" no valor de ${displayValue(totalAmount)}?`,
         async () => {
             const previousBoletos = [...boletos];
             setBoletos(prev => prev.map(b => 
@@ -498,10 +503,13 @@ const BoletoControl: React.FC = () => {
                 </select>
             </div>
             <div className="flex items-center gap-4">
-                <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total c/ Nota</span><p className="text-xl font-bold text-cyan-400">{formatCurrency(totalComNota)}</p></div>
-                 <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total s/ Nota</span><p className="text-xl font-bold text-amber-400">{formatCurrency(totalSemNota)}</p></div>
-                <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total Geral Filtrado</span><p className="text-2xl font-bold" style={{color: settings.accentColor}}>{formatCurrency(totalFiltrado)}</p></div>
+                <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total c/ Nota</span><p className="text-xl font-bold text-cyan-400">{displayValue(totalComNota)}</p></div>
+                 <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total s/ Nota</span><p className="text-xl font-bold text-amber-400">{displayValue(totalSemNota)}</p></div>
+                <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total Geral Filtrado</span><p className="text-2xl font-bold" style={{color: settings.accentColor}}>{displayValue(totalFiltrado)}</p></div>
                 <div className="flex items-center gap-2 no-print">
+                    <button type="button" onClick={toggleVisibility} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title={isValuesVisible ? "Ocultar" : "Mostrar"}>
+                        {isValuesVisible ? <EyeIcon className="w-5 h-5" /> : <EyeSlashIcon className="w-5 h-5" />}
+                    </button>
                     <button type="button" onClick={handlePrint} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title="Imprimir / Salvar PDF"><PrinterIcon className="w-5 h-5" /></button>
                     <button type="button" onClick={() => exportToXLSX(dataForExport, 'contas_a_pagar.xlsx')} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors"><ExportIcon className="w-5 h-5 mr-2" />Exportar XLSX</button>
                 </div>
@@ -527,9 +535,9 @@ const BoletoControl: React.FC = () => {
                     {sortedBoletos.map((b) => (
                         <tr key={b.id} onDoubleClick={() => handleEdit(b)} className="border-b border-slate-700 hover:bg-slate-700/50 cursor-pointer">
                             <td className="px-6 py-4 font-medium uppercase text-slate-200">{b.description}</td>
-                            <td className="px-6 py-4 text-right">{formatCurrency(Number(b.amountWithInvoice) || 0)}</td>
-                            <td className="px-6 py-4 text-right">{formatCurrency(Number(b.amountWithoutInvoice) || 0)}</td>
-                            <td className="px-6 py-4 text-right font-bold" style={{color: settings.accentColor}}>{formatCurrency((Number(b.amountWithInvoice) || 0) + (Number(b.amountWithoutInvoice) || 0))}</td>
+                            <td className="px-6 py-4 text-right">{displayValue(Number(b.amountWithInvoice) || 0)}</td>
+                            <td className="px-6 py-4 text-right">{displayValue(Number(b.amountWithoutInvoice) || 0)}</td>
+                            <td className="px-6 py-4 text-right font-bold" style={{color: settings.accentColor}}>{displayValue((Number(b.amountWithInvoice) || 0) + (Number(b.amountWithoutInvoice) || 0))}</td>
                             <td className="px-6 py-4">{b.category}</td>
                             <td className="px-6 py-4">{formatDateForDisplay(b.date)}</td>
                             <td className="px-6 py-4">{getStatusBadge(b.liveStatus)}</td>

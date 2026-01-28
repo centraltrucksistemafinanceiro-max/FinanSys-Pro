@@ -6,7 +6,8 @@ import { WindowManagerContext } from '../contexts/WindowManagerContext';
 import { APPS } from '../windows/apps';
 import { SettingsContext } from '../contexts/SettingsContext';
 import { CompanyContext } from '../contexts/CompanyContext';
-import { BriefcaseIcon, ChevronDownIcon, PlusIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/solid';
+import { PrivacyContext } from '../contexts/PrivacyContext';
+import { BriefcaseIcon, ChevronDownIcon, PlusIcon, XMarkIcon, CheckIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
 import Logo from './Logo';
 
 const ClockDisplay = React.memo(() => {
@@ -33,6 +34,8 @@ const Taskbar: React.FC = () => {
   const windowManager = useContext(WindowManagerContext);
   const settings = useContext(SettingsContext);
   const companyContext = useContext(CompanyContext);
+  const privacyContext = useContext(PrivacyContext);
+  
   const startMenuRef = useRef<HTMLDivElement>(null);
   const companySwitcherRef = useRef<HTMLDivElement>(null);
 
@@ -50,9 +53,10 @@ const Taskbar: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  if (!windowManager || !settings || !companyContext) return null;
+  if (!windowManager || !settings || !companyContext || !privacyContext) return null;
   const { windows, focusWindow, toggleMinimize } = windowManager;
   const { companies, currentCompany, setCurrentCompany, addCompany } = companyContext;
+  const { isValuesVisible, toggleVisibility } = privacyContext;
 
   const getAppById = (appId: string) => APPS.find(app => app.id === appId);
 
@@ -196,6 +200,14 @@ const Taskbar: React.FC = () => {
           })}
         </div>
       </div>
+
+      <button
+        onClick={toggleVisibility}
+        className="mx-2 p-1.5 rounded-md text-slate-600 dark:text-slate-400 hover:bg-slate-400/30 transition-colors"
+        title={isValuesVisible ? "Ocultar Valores" : "Mostrar Valores"}
+      >
+        {isValuesVisible ? <EyeIcon className="w-5 h-5" /> : <EyeSlashIcon className="w-5 h-5" />}
+      </button>
 
       <ClockDisplay />
     </div>

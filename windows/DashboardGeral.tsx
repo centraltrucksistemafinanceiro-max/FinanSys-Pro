@@ -7,8 +7,9 @@ import { FaturamentoContext } from '../contexts/FaturamentoContext';
 import { FaturamentoSemNotaContext } from '../contexts/FaturamentoSemNotaContext';
 import { BoletoContext } from '../contexts/BoletoContext';
 import { TransactionContext } from '../contexts/TransactionContext';
+import { PrivacyContext } from '../contexts/PrivacyContext';
 import { BoletoStatus, Faturamento, FaturamentoSemNota, Boleto, Transaction } from '../types';
-import { ScaleIcon, ClockIcon, CurrencyDollarIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline';
+import { ScaleIcon, ClockIcon, CurrencyDollarIcon, ArrowTrendingUpIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { PrinterIcon } from '../components/icons/AppIcons';
 import { formatCurrency } from '../utils/formatters';
 
@@ -17,28 +18,32 @@ const getMonthShortName = (monthIndex: number) => {
   return date.toLocaleString('pt-BR', { month: 'short' }).replace('.', '').toUpperCase();
 };
 
-const KPICard = ({ title, value, icon, colorClass, isCurrency = true }: { title: string, value: number, icon: React.ReactNode, colorClass: string, isCurrency?: boolean }) => (
-  <div className="bg-slate-800 p-4 rounded-lg shadow-lg flex flex-col justify-between border border-white/5 hover:border-white/10 transition-colors">
-    <div className="flex items-center justify-between text-slate-400">
-      <p className="text-sm font-medium">{title}</p>
-      {icon}
+const KPICard = ({ title, value, icon, colorClass, isCurrency = true }: { title: string, value: number, icon: React.ReactNode, colorClass: string, isCurrency?: boolean }) => {
+  const { isValuesVisible } = useContext(PrivacyContext)!;
+  return (
+    <div className="bg-slate-800 p-4 rounded-lg shadow-lg flex flex-col justify-between border border-white/5 hover:border-white/10 transition-colors">
+      <div className="flex items-center justify-between text-slate-400">
+        <p className="text-sm font-medium">{title}</p>
+        {icon}
+      </div>
+      <div>
+        <p className={`text-2xl font-bold ${colorClass}`}>
+          {isValuesVisible ? (isCurrency ? formatCurrency(value) : value) : '••••'}
+        </p>
+      </div>
     </div>
-    <div>
-      <p className={`text-2xl font-bold ${colorClass}`}>
-        {isCurrency ? formatCurrency(value) : value}
-      </p>
-    </div>
-  </div>
-);
+  );
+};
 
 const CustomTooltip = ({ active, payload, label }: any) => {
+  const { isValuesVisible } = useContext(PrivacyContext)!;
   if (active && payload && payload.length) {
     return (
       <div className="bg-slate-700 p-3 rounded-md border border-slate-600 text-sm shadow-2xl">
         <p className="font-bold text-slate-100 mb-2">{label}</p>
         {payload.map((pld: any, index: number) => (
           <p key={index} style={{ color: pld.color }}>
-            {`${pld.name}: ${formatCurrency(pld.value)}`}
+            {`${pld.name}: ${isValuesVisible ? formatCurrency(pld.value) : '••••'}`}
           </p>
         ))}
       </div>
@@ -54,6 +59,7 @@ const DashboardGeral: React.FC = () => {
     const faturamentoSemNotaContext = useContext(FaturamentoSemNotaContext);
     const boletoContext = useContext(BoletoContext);
     const transactionContext = useContext(TransactionContext);
+    const { isValuesVisible, toggleVisibility } = useContext(PrivacyContext)!;
 
     const today = new Date();
     const [startDate, setStartDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]);
@@ -187,10 +193,10 @@ const DashboardGeral: React.FC = () => {
 
     return (
         <div className="p-4 bg-slate-900 h-full overflow-y-auto text-slate-200 font-sans printable-dashboard custom-scrollbar">
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
                  <h1 className="text-2xl font-bold tracking-tight">FinanSys <span className="text-indigo-400">Pro v3.0</span></h1>
-                  <div className="flex items-center gap-4 no-print flex-wrap">
-                    <div className="flex items-center gap-2 bg-slate-800/50 p-1.5 rounded-lg border border-white/5">
+                  <div className="flex flex-wrap items-center gap-2 md:gap-4 no-print w-full md:w-auto">
+                    <div className="flex flex-wrap items-center gap-2 bg-slate-800/50 p-1.5 rounded-lg border border-white/5">
                         <div className="flex items-center gap-2 mr-2">
                             <label className="text-[10px] font-black text-indigo-400 uppercase">Ano:</label>
                             <select 
@@ -204,14 +210,17 @@ const DashboardGeral: React.FC = () => {
                             </select>
                         </div>
                         <div className="w-px h-4 bg-slate-700 mx-1 hidden sm:block"></div>
-                        <button onClick={() => setDateFilter('month')} className="px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 rounded-md transition-colors uppercase tracking-wider">Mês Atual</button>
-                        <button onClick={() => setDateFilter('year')} className="px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 rounded-md transition-colors uppercase tracking-wider">Ano Atual</button>
+                        <button onClick={() => setDateFilter('month')} className="px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 rounded-md transition-colors uppercase tracking-wider mobile:flex-grow">Mês Atual</button>
+                        <button onClick={() => setDateFilter('year')} className="px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 rounded-md transition-colors uppercase tracking-wider mobile:flex-grow">Ano Atual</button>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <input type="date" name="startDate" value={startDate} onChange={handleDateInputChange} className="p-2 text-xs rounded bg-slate-800 border border-slate-600 focus:ring-1 focus:ring-indigo-500 outline-none" />
+                    <div className="flex items-center gap-2 flex-grow md:flex-grow-0">
+                        <input type="date" name="startDate" value={startDate} onChange={handleDateInputChange} className="w-full md:w-auto p-2 text-xs rounded bg-slate-800 border border-slate-600 focus:ring-1 focus:ring-indigo-500 outline-none" />
                         <span className="text-slate-500 text-xs">até</span>
-                        <input type="date" name="endDate" value={endDate} onChange={handleDateInputChange} className="p-2 text-xs rounded bg-slate-800 border border-slate-600 focus:ring-1 focus:ring-indigo-500 outline-none" />
+                        <input type="date" name="endDate" value={endDate} onChange={handleDateInputChange} className="w-full md:w-auto p-2 text-xs rounded bg-slate-800 border border-slate-600 focus:ring-1 focus:ring-indigo-500 outline-none" />
                     </div>
+                    <button onClick={toggleVisibility} className="p-2 bg-slate-800 rounded-md shadow-sm hover:bg-slate-700 border border-white/5 transition-colors" title={isValuesVisible ? "Ocultar" : "Mostrar"}>
+                        {isValuesVisible ? <EyeIcon className="w-5 h-5 text-slate-300" /> : <EyeSlashIcon className="w-5 h-5 text-slate-300" />}
+                    </button>
                     <button onClick={() => window.print()} className="p-2 bg-slate-800 rounded-md shadow-sm hover:bg-slate-700 border border-white/5 transition-colors" title="Imprimir"><PrinterIcon className="w-5 h-5 text-slate-300" /></button>
                 </div>
             </div>
@@ -235,7 +244,7 @@ const DashboardGeral: React.FC = () => {
                                 <linearGradient id="colorSNF" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
                             </defs>
                             <XAxis dataKey="name" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
-                            <YAxis stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} tickFormatter={(value) => formatCurrency(Number(value))} />
+                            <YAxis stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} tickFormatter={(value) => isValuesVisible ? formatCurrency(Number(value)) : '••••'} />
                             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                             <Tooltip content={<CustomTooltip />} />
                             <Legend wrapperStyle={{fontSize: "10px", textTransform: "uppercase", paddingTop: "15px"}} verticalAlign="top" align="right" />
@@ -262,7 +271,7 @@ const DashboardGeral: React.FC = () => {
                                 >
                                     {compositionData.map((entry, index) => <Cell key={`cell-${index}`} fill={COMPOSITION_COLORS[index % COMPOSITION_COLORS.length]} stroke="none" />)}
                                 </Pie>
-                                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                                <Tooltip formatter={(value: number) => isValuesVisible ? formatCurrency(Number(value)) : '••••'} />
                                 <Legend iconType="circle" wrapperStyle={{fontSize: "10px", textTransform: "uppercase"}} verticalAlign="bottom" />
                             </PieChart>
                         </ResponsiveContainer>
@@ -276,7 +285,7 @@ const DashboardGeral: React.FC = () => {
                     <BarChart data={faturamentoVsContasPagasData} margin={{ top: 5, right: 30, left: 30, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                         <XAxis dataKey="name" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} />
-                        <YAxis stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} tickFormatter={(value) => formatCurrency(Number(value))} />
+                        <YAxis stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} tickFormatter={(value) => isValuesVisible ? formatCurrency(Number(value)) : '••••'} />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend wrapperStyle={{fontSize: "10px", textTransform: "uppercase", paddingTop: "15px"}} verticalAlign="top" align="right" />
                         <Bar dataKey="Faturamento" fill="#10b981" radius={[4, 4, 0, 0]} />

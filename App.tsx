@@ -4,6 +4,7 @@ import Taskbar from './components/Taskbar';
 import { SettingsContext } from './contexts/SettingsContext';
 import NotificationContainer from './components/NotificationContainer';
 import { AuthContext } from './contexts/AuthContext';
+import { PrivacyProvider } from './contexts/PrivacyContext';
 import LoginScreen from './components/LoginScreen';
 
 const App: React.FC = () => {
@@ -36,9 +37,11 @@ const App: React.FC = () => {
       className={`h-screen w-screen overflow-hidden flex flex-col font-sans ${getThemeClass()}`}
       style={{ '--accent-color': accentColor } as React.CSSProperties}
     >
-      <Desktop wallpaper={wallpaper} />
-      <Taskbar />
-      <NotificationContainer />
+      <PrivacyProvider>
+        <Desktop wallpaper={wallpaper} />
+        <Taskbar />
+        <NotificationContainer />
+      </PrivacyProvider>
     </div>
   );
 };

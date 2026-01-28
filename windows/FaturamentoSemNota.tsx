@@ -7,6 +7,8 @@ import { exportToXLSX } from '../utils/xlsxUtils';
 import { WindowManagerContext } from '../contexts/WindowManagerContext';
 import { ExportIcon, PrinterIcon } from '../components/icons/AppIcons';
 import { CompanyContext } from '../contexts/CompanyContext';
+import { PrivacyContext } from '../contexts/PrivacyContext';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -23,7 +25,10 @@ const FaturamentoSemNota: React.FC = () => {
   const settings = useContext(SettingsContext);
   const winManager = useContext(WindowManagerContext);
   const companyContext = useContext(CompanyContext);
+  const { isValuesVisible, toggleVisibility } = useContext(PrivacyContext)!;
   const dateInputRef = useRef<HTMLInputElement>(null);
+  
+  const displayValue = (val: number) => isValuesVisible ? formatCurrency(val) : '••••';
 
   // Calcula datas do mês atual para o filtro padrão
   const now = new Date();
@@ -464,10 +469,13 @@ const FaturamentoSemNota: React.FC = () => {
           <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" />
         </div>
         <div className="flex items-center gap-4 flex-wrap justify-end">
-          <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total Positivo</span><p className="text-xl font-bold text-green-400">{formatCurrency(totalPositivo)}</p></div>
-          <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total Negativo</span><p className="text-xl font-bold text-red-400">{formatCurrency(totalNegativo)}</p></div>
-          <div className="text-right"><span className="text-xs text-slate-400 uppercase">Saldo Filtrado</span><p className={`text-2xl font-bold ${totalFiltrado >= 0 ? 'text-slate-200' : 'text-red-400'}`}>{formatCurrency(totalFiltrado)}</p></div>
+          <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total Positivo</span><p className="text-xl font-bold text-green-400">{displayValue(totalPositivo)}</p></div>
+          <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total Negativo</span><p className="text-xl font-bold text-red-400">{displayValue(totalNegativo)}</p></div>
+          <div className="text-right"><span className="text-xs text-slate-400 uppercase">Saldo Filtrado</span><p className={`text-2xl font-bold ${totalFiltrado >= 0 ? 'text-slate-200' : 'text-red-400'}`}>{displayValue(totalFiltrado)}</p></div>
           <div className="flex items-center gap-2 no-print">
+            <button onClick={toggleVisibility} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title={isValuesVisible ? "Ocultar" : "Mostrar"}>
+                {isValuesVisible ? <EyeIcon className="w-5 h-5" /> : <EyeSlashIcon className="w-5 h-5" />}
+            </button>
             <button onClick={handlePrint} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title="Imprimir / Salvar PDF"><PrinterIcon className="w-5 h-5" /></button>
             <button onClick={() => exportToXLSX(dataForExport, 'faturamento_sem_nota.xlsx')} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors"><ExportIcon className="w-5 h-5 mr-2" />Exportar XLSX</button>
           </div>
@@ -492,7 +500,7 @@ const FaturamentoSemNota: React.FC = () => {
                 <tr key={f.id} onDoubleClick={() => handleEdit(f)} className="border-b border-slate-700 hover:bg-slate-700/50 cursor-pointer">
                   <td className="px-4 py-2">{formatDateForDisplay(f.data)}</td>
                   <td className="px-4 py-2">{f.nOrcamento || '-'}</td>
-                  <td className={`px-4 py-2 text-right font-medium ${f.valor >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatCurrency(f.valor)}</td>
+                  <td className={`px-4 py-2 text-right font-medium ${f.valor >= 0 ? 'text-green-400' : 'text-red-400'}`}>{displayValue(f.valor)}</td>
                   <td className="px-4 py-2">{f.condicaoPagamento}</td>
                   <td className="px-4 py-2">{f.categoria}</td>
                   <td className="px-4 py-2 no-print">
