@@ -146,8 +146,8 @@
 
       @media print {
         @page {
-            margin: 1.5cm 1.2cm;
-            size: A4 portrait;
+            margin: 1cm;
+            size: A4 landscape;
         }
 
         /* ========== 1. RESET BASE ========== */
@@ -238,8 +238,8 @@
 
         /* ========== 6. SEÇÕES E ESPAÇAMENTO ========== */
         section {
-            page-break-inside: avoid !important;
-            margin-bottom: 16px !important;
+            page-break-inside: auto !important;
+            margin-bottom: 12px !important;
             background: white !important;
             border: 1px solid #ddd !important;
             border-radius: 0 !important;
@@ -368,9 +368,11 @@
             line-height: 1.2 !important;
         }
 
-        /* ========== 9. GRID DE TABELAS (LAYOUT VERTICAL) ========== */
+        /* ========== 9. GRID DE TABELAS (LAYOUT LADO A LADO EM PAISAGEM) ========== */
         .grid.grid-cols-1.lg\:grid-cols-2 {
-            display: block !important;
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 20px !important;
             margin-bottom: 14px !important;
             page-break-inside: avoid !important;
         }
@@ -474,9 +476,17 @@
         }
 
         .chart-container,
-        section,
         table {
             page-break-inside: avoid !important;
+        }
+
+        /* Permitir que a seção de consolidado quebre se for longa */
+        section.allow-page-break {
+            page-break-inside: auto !important;
+        }
+
+        .break-before-page {
+            page-break-before: always !important;
         }
 
         /* ========== 15. AJUSTES DE FONTE GLOBAL ========== */

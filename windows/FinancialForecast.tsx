@@ -136,8 +136,8 @@ const FinancialForecast: React.FC = () => {
     const chartData = useMemo(() => {
         return monthlyData.map(data => ({
             name: data.shortMonth,
-            Faturamento: data.totalFaturamento,
-            Despesa: data.totalDespesa,
+            Faturamento: (Number(data.totalFaturamento) || 0),
+            Despesa: (Number(data.totalDespesa) || 0),
         }));
     }, [monthlyData]);
     
@@ -153,6 +153,13 @@ const FinancialForecast: React.FC = () => {
     
     const saldoTotal = totalFaturamento - totalDespesa;
     
+    const handlePrint = () => {
+        setIsPrinting(true);
+        setTimeout(() => {
+            window.print();
+        }, 1500); // Aumentado para 1.5s para total segurança
+    };
+
     const TableHeader = ({ title }: { title: string }) => (
         <div className="bg-slate-700 p-3 text-center font-bold text-lg rounded-t-md print:bg-slate-100 print:text-black print:border-t print:border-x print:border-black">
             {title}
@@ -210,7 +217,7 @@ const FinancialForecast: React.FC = () => {
                                 {isValuesVisible ? <EyeIcon className="w-5 h-5 text-slate-300" /> : <EyeSlashIcon className="w-5 h-5 text-slate-300" />}
                             </button>
                             <button
-                                onClick={() => window.print()}
+                                onClick={handlePrint}
                                 className="flex-1 md:flex-none flex items-center justify-center gap-2 p-3 md:px-5 md:py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-md transition-all text-xs md:text-sm font-black shadow-xl"
                             >
                                 <PrinterIcon className="w-5 h-5" />
@@ -232,10 +239,10 @@ const FinancialForecast: React.FC = () => {
 
                 <section className="bg-slate-800 p-4 rounded-lg shadow-lg mb-10 border border-white/10 print:border-black print:shadow-none chart-container">
                     <h2 className="font-bold mb-6 text-slate-300 print:text-black uppercase text-xs tracking-widest border-l-4 border-indigo-500 pl-3 print:border-l-0 print:mb-3">Evolução do Fluxo de Caixa</h2>
-                    <div className="h-[450px] w-full flex justify-center print:h-[310px] print:block">
+                    <div className="h-[450px] w-full flex justify-center print:h-[310px]">
                         {isPrinting ? (
                             <div style={{width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', paddingTop: '5px'}}>
-                                <AreaChart width={640} height={280} data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 20 }}>
+                                <AreaChart key={`print-chart-${chartData.length}`} width={1050} height={280} data={chartData} margin={{ top: 5, right: 30, left: 10, bottom: 20 }}>
                                     <defs>
                                         <linearGradient id="colorFatPrint" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="#059669" stopOpacity={0.8}/>
@@ -250,8 +257,8 @@ const FinancialForecast: React.FC = () => {
                                     <YAxis stroke="#000" fontSize={8} tick={{fill: '#000', fontWeight: '600'}} tickFormatter={(v) => isValuesVisible ? `R$ ${v/1000}k` : '••••'} width={50} />
                                     <CartesianGrid strokeDasharray="3 3" stroke="#999" vertical={false} />
                                     <Legend verticalAlign="top" height={30} iconType="rect" iconSize={8} wrapperStyle={{fontSize: '8px', fontWeight: 'bold'}} />
-                                    <Area type="monotone" name="Faturamento" dataKey="Faturamento" stroke="#059669" strokeWidth={2} fillOpacity={1} fill="url(#colorFatPrint)" />
-                                    <Area type="monotone" name="Despesa" dataKey="Despesa" stroke="#dc2626" strokeWidth={2} fillOpacity={1} fill="url(#colorDespPrint)" />
+                                    <Area type="monotone" name="Faturamento" dataKey="Faturamento" stroke="#059669" strokeWidth={2} fillOpacity={1} fill="url(#colorFatPrint)" connectNulls={true} isAnimationActive={false} />
+                                    <Area type="monotone" name="Despesa" dataKey="Despesa" stroke="#dc2626" strokeWidth={2} fillOpacity={1} fill="url(#colorDespPrint)" connectNulls={true} isAnimationActive={false} />
                                 </AreaChart>
                             </div>
                         ) : (
@@ -266,15 +273,15 @@ const FinancialForecast: React.FC = () => {
                                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
                                     <Tooltip content={<CustomTooltip />} />
                                     <Legend verticalAlign="top" height={40}/>
-                                    <Area type="monotone" name="Faturamento" dataKey="Faturamento" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorFat)" />
-                                    <Area type="monotone" name="Despesa" dataKey="Despesa" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorDesp)" />
+                                    <Area type="monotone" name="Faturamento" dataKey="Faturamento" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorFat)" connectNulls={true} />
+                                    <Area type="monotone" name="Despesa" dataKey="Despesa" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorDesp)" connectNulls={true} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         )}
                     </div>
                 </section>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10 print:block">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
                     <section className="bg-slate-800 rounded-md shadow-lg border border-white/5 print:border-none print:shadow-none print:mb-10">
                         <TableHeader title="DESPESAS OPERACIONAIS" />
                         <div className="overflow-x-auto">
@@ -348,7 +355,7 @@ const FinancialForecast: React.FC = () => {
                     </section>
                 </div>
 
-                <section className="mt-10 bg-slate-800 rounded-md shadow-xl border border-white/5 print:border-none print:shadow-none">
+                <section className="mt-6 bg-slate-800 rounded-md shadow-xl border border-white/5 print:border-none print:shadow-none allow-page-break break-before-page">
                     <TableHeader title="CONSOLIDADO GERAL DE RESULTADOS" />
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
