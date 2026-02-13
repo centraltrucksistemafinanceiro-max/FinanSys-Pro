@@ -58,6 +58,8 @@ const CashFlow: React.FC = () => {
   
   const [isPrinting, setIsPrinting] = useState(false);
   const [newlyAddedId, setNewlyAddedId] = useState<string | null>(null);
+  const [isFormExpanded, setIsFormExpanded] = useState(window.innerWidth > 768);
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState(window.innerWidth > 768);
   
   const [confirmationModal, setConfirmationModal] = useState<{
       isOpen: boolean;
@@ -92,6 +94,12 @@ const CashFlow: React.FC = () => {
       setFormState({ ...initialFormState, category: getInitialCategory() });
     }
   }, [editingTransactionId, items]);
+
+  useEffect(() => {
+    if (isEditing) {
+      setIsFormExpanded(true);
+    }
+  }, [isEditing]);
 
   const fetchPreviousDayBalance = useCallback(async () => {
     if (!companyContext.currentCompany.id || !getBalanceUntilDate) return;
@@ -265,91 +273,142 @@ const CashFlow: React.FC = () => {
 
       <h1 className="hidden print:block text-2xl font-bold mb-4 text-black">Relatório de Fluxo de Caixa</h1>
       
-      <div className="flex-shrink-0 bg-slate-800 p-4 rounded-lg shadow-lg no-print">
-          <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                  <div className="md:col-span-2">
-                      <label htmlFor="date" className="block text-sm font-medium mb-1 text-slate-400">Data</label>
-                      <input ref={dateInputRef} type="date" id="date" name="date" value={formState.date} onChange={handleInputChange} required className="w-full p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties} />
+      <div className="flex-shrink-0 bg-slate-800 p-3 md:p-4 rounded-lg shadow-lg no-print">
+          <div className="flex justify-between items-center mb-2 md:mb-4">
+              <h2 
+                className="text-lg md:text-xl font-bold cursor-pointer flex items-center gap-2"
+                onClick={() => setIsFormExpanded(!isFormExpanded)}
+              >
+                  {isEditing ? 'Editando Lançamento' : 'Novo Lançamento'}
+                  <span className="md:hidden text-xs text-slate-500 font-normal">({isFormExpanded ? 'fechar' : 'abrir'})</span>
+              </h2>
+              <button type="button" onClick={() => setIsFormExpanded(!isFormExpanded)} className="md:hidden bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded transition-colors">
+                {isFormExpanded ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                  </svg>
+                )}
+              </button>
+          </div>
+          {isFormExpanded && (
+            <div className="animate-in slide-in-from-top duration-300">
+              <form onSubmit={handleSubmit}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3 md:gap-4 items-end">
+                      <div className="md:col-span-2">
+                          <label htmlFor="date" className="block text-xs md:text-sm font-medium mb-1 text-slate-400">Data</label>
+                          <input ref={dateInputRef} type="date" id="date" name="date" value={formState.date} onChange={handleInputChange} required className="w-full p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties} />
+                      </div>
+                      <div className="sm:col-span-2 md:col-span-3">
+                          <label htmlFor="description" className="block text-xs md:text-sm font-medium mb-1 text-slate-400">Descrição</label>
+                          <input type="text" id="description" name="description" value={formState.description} onChange={handleInputChange} placeholder="Ex: Pagamento" required className="w-full p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none uppercase" style={{'--tw-ring-color': accentColor} as React.CSSProperties} />
+                      </div>
+                      <div className="md:col-span-2">
+                          <label htmlFor="category" className="block text-xs md:text-sm font-medium mb-1 text-slate-400">Categoria</label>
+                          <select id="category" name="category" value={formState.category} onChange={handleInputChange} className="w-full p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties}>
+                              {categories.map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
+                          </select>
+                      </div>
+                      <div className="md:col-span-2">
+                          <label htmlFor="paymentMethod" className="block text-xs md:text-sm font-medium mb-1 text-slate-400">Tipo Pag.</label>
+                          <select id="paymentMethod" name="paymentMethod" value={formState.paymentMethod} onChange={handleInputChange} className="w-full p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties}>
+                              {PAYMENT_METHODS.map(method => <option key={method} value={method}>{method}</option>)}
+                          </select>
+                      </div>
+                      <div className="md:col-span-1">
+                          <label htmlFor="type" className="block text-xs md:text-sm font-medium mb-1 text-slate-400">Tipo</label>
+                          <select id="type" name="type" value={formState.type} onChange={handleInputChange} className="w-full p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties}>
+                              <option value={TransactionType.EXPENSE}>SAÍDA</option>
+                              <option value={TransactionType.INCOME}>ENTRADA</option>
+                          </select>
+                      </div>
+                      <div className="md:col-span-2">
+                          <label htmlFor="amount" className="block text-xs md:text-sm font-medium mb-1 text-slate-400">Valor</label>
+                          <input type="number" id="amount" name="amount" value={formState.amount} onChange={handleInputChange} required step="0.01" min="0" placeholder="0" className="w-full p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties} />
+                      </div>
+                      <div className="sm:col-span-2 md:col-span-2 flex flex-col gap-2 mt-2 md:mt-0">
+                        <button type="submit" className="w-full text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm" style={accentBgColor}>
+                            {isEditing ? 'Salvar' : 'Adicionar'}
+                        </button>
+                        {isEditing && (
+                          <button type="button" onClick={handleCancelEdit} className="w-full bg-slate-600 font-semibold py-2 px-4 rounded-lg transition-opacity hover:opacity-90 text-sm">
+                            Cancelar
+                          </button>
+                        )}
+                      </div>
                   </div>
-                  <div className="md:col-span-3">
-                      <label htmlFor="description" className="block text-sm font-medium mb-1 text-slate-400">Descrição</label>
-                      <input type="text" id="description" name="description" value={formState.description} onChange={handleInputChange} placeholder="Ex: Pagamento de fornecedor" required className="w-full p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none uppercase" style={{'--tw-ring-color': accentColor} as React.CSSProperties} />
-                  </div>
-                  <div className="md:col-span-2">
-                      <label htmlFor="category" className="block text-sm font-medium mb-1 text-slate-400">Categoria</label>
-                      <select id="category" name="category" value={formState.category} onChange={handleInputChange} className="w-full p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties}>
-                          {categories.map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
-                      </select>
-                  </div>
-                  <div className="md:col-span-2">
-                      <label htmlFor="paymentMethod" className="block text-sm font-medium mb-1 text-slate-400">Tipo Pag.</label>
-                      <select id="paymentMethod" name="paymentMethod" value={formState.paymentMethod} onChange={handleInputChange} className="w-full p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties}>
-                          {PAYMENT_METHODS.map(method => <option key={method} value={method}>{method}</option>)}
-                      </select>
-                  </div>
-                   <div className="md:col-span-1">
-                      <label htmlFor="type" className="block text-sm font-medium mb-1 text-slate-400">Tipo</label>
-                      <select id="type" name="type" value={formState.type} onChange={handleInputChange} className="w-full p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties}>
-                          <option value={TransactionType.EXPENSE}>SAÍDA</option>
-                          <option value={TransactionType.INCOME}>ENTRADA</option>
-                      </select>
-                  </div>
-                  <div className="md:col-span-2">
-                      <label htmlFor="amount" className="block text-sm font-medium mb-1 text-slate-400">Valor</label>
-                      <input type="number" id="amount" name="amount" value={formState.amount} onChange={handleInputChange} required step="0.01" min="0" placeholder="0" className="w-full p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties} />
-                  </div>
-                  <div className="md:col-span-2 flex flex-col">
-                    <button type="submit" className="w-full text-white font-semibold py-2 px-4 rounded-lg transition-colors" style={accentBgColor}>
-                        {isEditing ? 'Salvar' : 'Adicionar'}
-                    </button>
-                    {isEditing && (
-                      <button type="button" onClick={handleCancelEdit} className="w-full bg-slate-600 font-semibold py-2 px-4 rounded-lg transition-opacity hover:opacity-90 mt-2">
-                        Cancelar
-                      </button>
-                    )}
-                  </div>
-              </div>
-          </form>
+              </form>
+            </div>
+          )}
       </div>
 
-      <div className="flex-shrink-0 bg-slate-800 p-3 rounded-lg shadow-lg flex flex-wrap justify-between items-center gap-4">
-          <div className="flex flex-wrap items-center gap-2 no-print">
-              <input type="text" name="description" value={filters.description} onChange={handleFilterChange} placeholder="Buscar por descrição..." className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none w-48 uppercase" style={{'--tw-ring-color': accentColor} as React.CSSProperties} />
-              <select name="category" value={filters.category} onChange={handleFilterChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties}>
-                  <option value="">Todas as Categorias</option>
-                  {categories.map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
-              </select>
-              <select name="paymentMethod" value={filters.paymentMethod} onChange={handleFilterChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties}>
-                  <option value="">Todos Tipos Pag.</option>
-                  {PAYMENT_METHODS.map(method => <option key={method} value={method}>{method}</option>)}
-              </select>
-              <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" />
-              <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" />
+      <div className="flex-shrink-0 bg-slate-800 p-3 rounded-lg shadow-lg no-print">
+          <div className="flex justify-between items-center md:hidden mb-2">
+              <button 
+                onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
+                className="w-full flex items-center justify-between bg-slate-700 hover:bg-slate-600 p-2 rounded text-xs font-bold transition-colors"
+              >
+                  <span className="flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                      </svg>
+                      PESQUISA E FILTROS
+                  </span>
+                  {isFiltersExpanded ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                  )}
+              </button>
           </div>
-          <div className="flex items-center gap-4">
-              <div className="text-right">
-                  <span className="text-xs text-slate-400 uppercase">Saldo Dia Anterior</span>
-                  <p className="text-xl font-bold text-slate-300">{displayValue(previousDayBalance)}</p>
+
+          <div className={`${isFiltersExpanded ? 'flex' : 'hidden md:flex'} flex-col md:flex-row justify-between items-center gap-4`}>
+              <div className="flex flex-wrap items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+                  <input type="text" name="description" value={filters.description} onChange={handleFilterChange} placeholder="Buscar..." className="flex-grow md:flex-grow-0 p-2 text-xs md:text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none w-32 md:w-48 uppercase" style={{'--tw-ring-color': accentColor} as React.CSSProperties} />
+                  <select name="category" value={filters.category} onChange={handleFilterChange} className="p-2 text-xs md:text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties}>
+                      <option value="">Categorias</option>
+                      {categories.map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
+                  </select>
+                  <select name="paymentMethod" value={filters.paymentMethod} onChange={handleFilterChange} className="p-2 text-xs md:text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': accentColor} as React.CSSProperties}>
+                      <option value="">Pagamento</option>
+                      {PAYMENT_METHODS.map(method => <option key={method} value={method}>{method}</option>)}
+                  </select>
+                  <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="p-2 text-xs md:text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" />
+                  <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-2 text-xs md:text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" />
               </div>
-              <div className="text-right">
-                  <span className="text-xs text-slate-400 uppercase">Total Entradas</span>
-                  <p className="text-xl font-bold text-green-400">{displayValue(totalEntradas)}</p>
-              </div>
-              <div className="text-right">
-                  <span className="text-xs text-slate-400 uppercase">Total Saídas</span>
-                  <p className="text-xl font-bold text-red-400">{displayValue(totalSaidas)}</p>
-              </div>
-              <div className="text-right">
-                  <span className="text-xs text-slate-400 uppercase">Saldo Filtrado</span>
-                  <p className={`text-2xl font-bold ${(totalEntradas - totalSaidas) >= 0 ? 'text-green-400' : 'text-red-400'}`}>{displayValue(totalEntradas - totalSaidas)}</p>
-              </div>
-              <div className="flex items-center gap-2 no-print">
-                <button onClick={toggleVisibility} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title={isValuesVisible ? "Ocultar" : "Mostrar"}>
-                    {isValuesVisible ? <EyeIcon className="w-5 h-5" /> : <EyeSlashIcon className="w-5 h-5" />}
-                </button>
-                <button onClick={handlePrint} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title="Imprimir / Salvar PDF"><PrinterIcon className="w-5 h-5" /></button>
-                <button onClick={() => exportToXLSX(dataForExport, 'fluxo_de_caixa.xlsx')} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors"><ExportIcon className="w-5 h-5 mr-2" />Exportar XLSX</button>
+              <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+                  <div className="grid grid-cols-2 lg:flex lg:items-center gap-3 w-full md:w-auto border-t border-b border-slate-700 md:border-none py-2 md:py-0">
+                    <div className="text-center md:text-right">
+                        <span className="text-[10px] md:text-xs text-slate-400 uppercase">Anterior</span>
+                        <p className="text-sm md:text-base font-bold text-slate-300">{displayValue(previousDayBalance)}</p>
+                    </div>
+                    <div className="text-center md:text-right">
+                        <span className="text-[10px] md:text-xs text-slate-400 uppercase">Entradas</span>
+                        <p className="text-sm md:text-base font-bold text-green-400">{displayValue(totalEntradas)}</p>
+                    </div>
+                    <div className="text-center md:text-right">
+                        <span className="text-[10px] md:text-xs text-slate-400 uppercase">Saídas</span>
+                        <p className="text-sm md:text-base font-bold text-red-400">{displayValue(totalSaidas)}</p>
+                    </div>
+                    <div className="text-center md:text-right">
+                        <span className="text-[10px] md:text-xs text-slate-400 uppercase">Saldo</span>
+                        <p className={`text-base md:text-xl font-bold ${(totalEntradas - totalSaidas) >= 0 ? 'text-green-400' : 'text-red-400'}`}>{displayValue(totalEntradas - totalSaidas)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 w-full md:w-auto">
+                    <button onClick={toggleVisibility} className="flex-1 md:flex-none bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-3 rounded flex items-center justify-center transition-colors" title={isValuesVisible ? "Ocultar" : "Mostrar"}>
+                        {isValuesVisible ? <EyeIcon className="w-5 h-5" /> : <EyeSlashIcon className="w-5 h-5" />}
+                    </button>
+                    <button onClick={handlePrint} className="flex-1 md:flex-none bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-3 rounded flex items-center justify-center transition-colors" title="Imprimir / Salvar PDF"><PrinterIcon className="w-5 h-5" /></button>
+                    <button onClick={() => exportToXLSX(dataForExport, 'fluxo_de_caixa.xlsx')} className="flex-[2] md:flex-none bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-3 rounded flex items-center justify-center transition-colors text-xs"><ExportIcon className="w-5 h-5 mr-1" />Exportar</button>
+                  </div>
               </div>
           </div>
       </div>

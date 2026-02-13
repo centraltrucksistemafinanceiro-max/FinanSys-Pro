@@ -64,6 +64,8 @@ const Faturamento: React.FC = () => {
   const [batchData, setBatchData] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isFormExpanded, setIsFormExpanded] = useState(window.innerWidth > 768);
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState(window.innerWidth > 768);
 
   const [faturamentos, setFaturamentos] = useState<FaturamentoType[]>([]);
   
@@ -114,6 +116,12 @@ const Faturamento: React.FC = () => {
       setFormState(initialFormState);
     }
   }, [editingId]);
+
+  useEffect(() => {
+    if (isEditing) {
+      setIsFormExpanded(true);
+    }
+  }, [isEditing]);
 
   useEffect(() => {
     setHighlightedIndex(-1);
@@ -380,72 +388,123 @@ const Faturamento: React.FC = () => {
         )}
 
       <h1 className="hidden print:block text-2xl font-bold mb-4 text-black">Relatório de Faturamento c/ Nota</h1>
-      <div className="flex-shrink-0 bg-slate-800 p-4 rounded-lg shadow-lg no-print">
-        <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">{viewMode === 'single' ? (isEditing ? 'Editando Faturamento' : 'Novo Faturamento') : 'Cadastro em Lote'}</h2>
-            <button onClick={() => { if (isEditing) handleCancelEdit(); setViewMode(prev => prev === 'single' ? 'batch' : 'single'); }} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors text-sm">
-                {viewMode === 'single' ? 'Cadastrar em Lote' : 'Cadastro Individual'}
-            </button>
+      <div className="flex-shrink-0 bg-slate-800 p-3 md:p-4 rounded-lg shadow-lg no-print">
+        <div className="flex justify-between items-center mb-2 md:mb-4">
+            <h2 
+              className="text-lg md:text-xl font-bold cursor-pointer flex items-center gap-2"
+              onClick={() => setIsFormExpanded(!isFormExpanded)}
+            >
+                {viewMode === 'single' ? (isEditing ? 'Editando Faturamento' : 'Novo Faturamento') : 'Cadastro em Lote'}
+                <span className="md:hidden text-xs text-slate-500 font-normal">({isFormExpanded ? 'fechar' : 'abrir'})</span>
+            </h2>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setIsFormExpanded(!isFormExpanded)} className="md:hidden bg-slate-700 hover:bg-slate-600 text-slate-300 p-2 rounded transition-colors">
+                {isFormExpanded ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                  </svg>
+                )}
+              </button>
+              <button onClick={() => { if (isEditing) handleCancelEdit(); setViewMode(prev => prev === 'single' ? 'batch' : 'single'); setIsFormExpanded(true); }} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-1.5 px-3 md:py-2 md:px-4 rounded flex items-center transition-colors text-xs md:text-sm">
+                  {viewMode === 'single' ? 'Lote' : 'Individual'}
+              </button>
+            </div>
         </div>
-        {viewMode === 'single' ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="data" className="block text-sm font-medium mb-1 text-slate-400">Data</label>
-                <input ref={dateInputRef} type="date" id="data" name="data" value={formState.data} onChange={handleInputChange} required className="w-full p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} />
+        {isFormExpanded && (
+          <div className="animate-in slide-in-from-top duration-300">
+            {viewMode === 'single' ? (
+              <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                  <div>
+                    <label htmlFor="data" className="block text-xs md:text-sm font-medium mb-1 text-slate-400">Data</label>
+                    <input ref={dateInputRef} type="date" id="data" name="data" value={formState.data} onChange={handleInputChange} required className="w-full p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} />
+                  </div>
+                  <div className="relative">
+                    <label htmlFor="cliente" className="block text-xs md:text-sm font-medium mb-1 text-slate-400">Cliente</label>
+                    <input type="text" id="cliente" name="cliente" value={formState.cliente} onChange={handleInputChange} onKeyDown={handleKeyDown} onFocus={() => setIsClienteFocused(true)} onBlur={() => setTimeout(() => setIsClienteFocused(false), 200)} autoComplete="off" placeholder="Nome do cliente" required className="w-full p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none uppercase" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} />
+                      {isClienteFocused && clienteSuggestions.length > 0 && (
+                          <ul className="absolute z-10 w-full bg-slate-700 border border-slate-600 rounded-md mt-1 shadow-lg max-h-40 overflow-y-auto">
+                              {clienteSuggestions.map((suggestion, index) => (
+                                  <li key={index} className={`px-3 py-2 cursor-pointer hover:bg-slate-600 ${index === highlightedIndex ? 'bg-slate-600' : ''}`} onClick={() => { setFormState(prev => ({ ...prev, cliente: suggestion })); setClienteSuggestions([]); }}>{suggestion}</li>
+                              ))}
+                          </ul>
+                      )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                  <div><label htmlFor="nNotaServico" className="block text-xs md:text-sm font-medium mb-1 text-slate-400">Nota Serviço</label><input type="text" id="nNotaServico" name="nNotaServico" value={formState.nNotaServico} onChange={handleInputChange} className="w-full p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none uppercase" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} /></div>
+                  <div><label htmlFor="nNotaPecas" className="block text-xs md:text-sm font-medium mb-1 text-slate-400">Nota Peça</label><input type="text" id="nNotaPecas" name="nNotaPecas" value={formState.nNotaPecas} onChange={handleInputChange} className="w-full p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none uppercase" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} /></div>
+                  <div><label htmlFor="valor" className="block text-xs md:text-sm font-medium mb-1 text-slate-400">Valor Total</label><input type="number" id="valor" name="valor" value={formState.valor} onChange={handleInputChange} required step="0.01" min="0" placeholder="0" className="w-full p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} /></div>
+                  <div><label htmlFor="quantidade" className="block text-xs md:text-sm font-medium mb-1 text-slate-400">Parcelas</label><input type="number" id="quantidade" name="quantidade" value={formState.quantidade} onChange={handleInputChange} min="1" className="w-full p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} /></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 items-end">
+                  <div><label htmlFor="condicoesPagamento" className="block text-xs md:text-sm font-medium mb-1 text-slate-400">Condições</label><input type="text" id="condicoesPagamento" name="condicoesPagamento" placeholder="Ex: 30/60 dias" value={formState.condicoesPagamento} onChange={handleInputChange} className="w-full p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none uppercase" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} /></div>
+                  <div className="flex gap-2">
+                    <button type="submit" className="w-full text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm" style={{backgroundColor: settings.accentColor}}>{isEditing ? 'Salvar' : 'Adicionar'}</button>
+                    {isEditing && <button type="button" onClick={handleCancelEdit} className="w-full bg-slate-600 font-semibold py-2 px-4 rounded-lg transition-opacity hover:opacity-90 text-sm">Cancelar</button>}
+                  </div>
+                </div>
+              </form>
+            ) : (
+              <div className="space-y-4">
+                  <p className="text-[10px] md:text-sm text-slate-400"><strong className="font-mono">Data | Cliente | N. Serv | N. Peça | Valor | Parcelas | Condições</strong></p>
+                  <textarea value={batchData} onChange={(e) => setBatchData(e.target.value)} placeholder={'06/01/2025\tCLIENTE TESTE\t8510\t7269\tR$ 7.977,31\t4\t30/60/90/120'} className="w-full h-32 md:h-48 p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none font-mono text-xs md:text-sm" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} />
+                  <div className="flex justify-end gap-4">
+                      <button onClick={handleProcessBatch} disabled={isProcessing} className="text-white font-semibold py-2 px-6 rounded-lg transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-wait text-sm" style={{backgroundColor: settings.accentColor}}>{isProcessing ? 'Processando...' : 'Processar'}</button>
+                  </div>
               </div>
-              <div className="relative">
-                <label htmlFor="cliente" className="block text-sm font-medium mb-1 text-slate-400">Cliente</label>
-                <input type="text" id="cliente" name="cliente" value={formState.cliente} onChange={handleInputChange} onKeyDown={handleKeyDown} onFocus={() => setIsClienteFocused(true)} onBlur={() => setTimeout(() => setIsClienteFocused(false), 200)} autoComplete="off" placeholder="Nome do cliente" required className="w-full p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none uppercase" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} />
-                  {isClienteFocused && clienteSuggestions.length > 0 && (
-                      <ul className="absolute z-10 w-full bg-slate-700 border border-slate-600 rounded-md mt-1 shadow-lg max-h-40 overflow-y-auto">
-                          {clienteSuggestions.map((suggestion, index) => (
-                              <li key={index} className={`px-3 py-2 cursor-pointer hover:bg-slate-600 ${index === highlightedIndex ? 'bg-slate-600' : ''}`} onClick={() => { setFormState(prev => ({ ...prev, cliente: suggestion })); setClienteSuggestions([]); }}>{suggestion}</li>
-                          ))}
-                      </ul>
-                  )}
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div><label htmlFor="nNotaServico" className="block text-sm font-medium mb-1 text-slate-400">Nº Nota Serviço</label><input type="text" id="nNotaServico" name="nNotaServico" value={formState.nNotaServico} onChange={handleInputChange} className="w-full p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none uppercase" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} /></div>
-              <div><label htmlFor="nNotaPecas" className="block text-sm font-medium mb-1 text-slate-400">Nº Nota Peça</label><input type="text" id="nNotaPecas" name="nNotaPecas" value={formState.nNotaPecas} onChange={handleInputChange} className="w-full p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none uppercase" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} /></div>
-              <div><label htmlFor="valor" className="block text-sm font-medium mb-1 text-slate-400">Valor Total</label><input type="number" id="valor" name="valor" value={formState.valor} onChange={handleInputChange} required step="0.01" min="0" placeholder="0" className="w-full p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} /></div>
-              <div><label htmlFor="quantidade" className="block text-sm font-medium mb-1 text-slate-400">Parcelas</label><input type="number" id="quantidade" name="quantidade" value={formState.quantidade} onChange={handleInputChange} min="1" className="w-full p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} /></div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-              <div><label htmlFor="condicoesPagamento" className="block text-sm font-medium mb-1 text-slate-400">Condições de Pagamento</label><input type="text" id="condicoesPagamento" name="condicoesPagamento" placeholder="Ex: 30/60/90 dias" value={formState.condicoesPagamento} onChange={handleInputChange} className="w-full p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none uppercase" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} /></div>
-              <div className="flex gap-2">
-                <button type="submit" className="w-full text-white font-semibold py-2 px-4 rounded-lg transition-colors" style={{backgroundColor: settings.accentColor}}>{isEditing ? 'Salvar' : 'Adicionar'}</button>
-                {isEditing && <button type="button" onClick={handleCancelEdit} className="w-full bg-slate-600 font-semibold py-2 px-4 rounded-lg transition-opacity hover:opacity-90">Cancelar</button>}
-              </div>
-            </div>
-          </form>
-        ) : (
-          <div className="space-y-4">
-              <p className="text-sm text-slate-400"><strong className="font-mono">Data | Cliente | Nota Serviço | Nota Peça | Valor Total | Parcelas | Condições</strong></p>
-              <textarea value={batchData} onChange={(e) => setBatchData(e.target.value)} placeholder={'06/01/2025\tCLIENTE TESTE\t8510\t7269\tR$ 7.977,31\t4\t30/60/90/120'} className="w-full h-48 p-2 rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none font-mono text-sm" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} />
-              <div className="flex justify-end gap-4">
-                  <button onClick={handleProcessBatch} disabled={isProcessing} className="text-white font-semibold py-2 px-6 rounded-lg transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-wait" style={{backgroundColor: settings.accentColor}}>{isProcessing ? 'Processando...' : 'Processar Lote'}</button>
-              </div>
+            )}
           </div>
         )}
       </div>
 
       <div className="flex-grow flex flex-col bg-slate-800 rounded-lg shadow-lg overflow-hidden">
-        <div className="flex-shrink-0 p-3 border-b border-slate-700 flex flex-wrap justify-between items-center gap-4">
-          <div className="flex flex-wrap items-center gap-2 no-print">
-            <input type="text" name="cliente" value={filters.cliente} onChange={handleFilterChange} placeholder="Buscar por cliente..." className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none w-64 uppercase" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} />
-            <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" />
-            <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-2 text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" />
+        <div className="flex-shrink-0 p-3 border-b border-slate-700 no-print">
+          <div className="flex justify-between items-center md:hidden mb-2">
+              <button 
+                onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
+                className="w-full flex items-center justify-between bg-slate-700 hover:bg-slate-600 p-2 rounded text-xs font-bold transition-colors"
+              >
+                  <span className="flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                      </svg>
+                      PESQUISA E FILTROS
+                  </span>
+                  {isFiltersExpanded ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                  )}
+              </button>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right"><span className="text-xs text-slate-400 uppercase">Total Filtrado</span><p className="text-2xl font-bold text-green-400">{displayValue(totalFiltrado)}</p></div>
-            <div className="flex items-center gap-2 no-print">
-                <button onClick={toggleVisibility} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title={isValuesVisible ? "Ocultar" : "Mostrar"}>
-                    {isValuesVisible ? <EyeIcon className="w-5 h-5" /> : <EyeSlashIcon className="w-5 h-5" />}
-                </button>
-                <button onClick={handlePrint} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors" title="Imprimir / Salvar PDF"><PrinterIcon className="w-5 h-5" /></button>
-                <button onClick={() => exportToXLSX(dataForExport, 'faturamento_com_nota.xlsx')} className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center transition-colors"><ExportIcon className="w-5 h-5 mr-2" />Exportar XLSX</button>
+
+          <div className={`${isFiltersExpanded ? 'flex' : 'hidden md:flex'} flex-col md:flex-row justify-between items-center gap-4`}>
+            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+              <input type="text" name="cliente" value={filters.cliente} onChange={handleFilterChange} placeholder="Buscar..." className="flex-grow md:flex-grow-0 p-2 text-xs md:text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none w-32 md:w-64 uppercase" style={{'--tw-ring-color': settings.accentColor} as React.CSSProperties} />
+              <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="p-2 text-xs md:text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" />
+              <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-2 text-xs md:text-sm rounded bg-slate-700 border border-slate-600 focus:ring-2 focus:border-transparent focus:outline-none" />
+            </div>
+            <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+              <div className="text-center md:text-right border-t border-b border-slate-700 md:border-none py-2 md:py-0 w-full md:w-auto">
+                <span className="text-[10px] md:text-xs text-slate-400 uppercase">Total Filtrado</span>
+                <p className="text-sm md:text-2xl font-bold text-green-400">{displayValue(totalFiltrado)}</p>
+              </div>
+              <div className="flex items-center justify-center gap-2 w-full md:w-auto">
+                  <button onClick={toggleVisibility} className="flex-1 md:flex-none bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center justify-center transition-colors" title={isValuesVisible ? "Ocultar" : "Mostrar"}>
+                      {isValuesVisible ? <EyeIcon className="w-5 h-5" /> : <EyeSlashIcon className="w-5 h-5" />}
+                  </button>
+                  <button onClick={handlePrint} className="flex-1 md:flex-none bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded flex items-center justify-center transition-colors" title="Imprimir / Salvar PDF"><PrinterIcon className="w-5 h-5" /></button>
+                  <button onClick={() => exportToXLSX(dataForExport, 'faturamento_com_nota.xlsx')} className="flex-[2] md:flex-none bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-3 rounded flex items-center justify-center transition-colors text-xs md:text-sm"><ExportIcon className="w-5 h-5 mr-1 md:mr-2" /><span className="md:inline">Exportar</span></button>
+              </div>
             </div>
           </div>
         </div>

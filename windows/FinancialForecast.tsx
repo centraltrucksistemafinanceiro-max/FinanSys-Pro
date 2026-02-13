@@ -46,6 +46,7 @@ const FinancialForecast: React.FC = () => {
     const [monthlyData, setMonthlyData] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isPrinting, setIsPrinting] = useState(false);
+    const [isFiltersExpanded, setIsFiltersExpanded] = useState(window.innerWidth > 768);
 
     const years = useMemo(() => {
         const startYear = 2020;
@@ -160,10 +161,27 @@ const FinancialForecast: React.FC = () => {
 
     return (
         <div className="bg-slate-900 text-slate-200 font-sans printable-dashboard">
-            <div className="p-4 md:p-8">
+            <div className="p-2 sm:p-4 md:p-8">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4 no-print">
-                    <h1 className="text-2xl font-bold text-white uppercase tracking-tight">Projeção Financeira</h1>
-                    <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
+                    <div className="flex items-center justify-between w-full md:w-auto">
+                        <h1 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">Projeção Financeira</h1>
+                        <button 
+                            onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
+                            className="md:hidden bg-slate-800 p-2 rounded border border-white/5"
+                        >
+                            {isFiltersExpanded ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                                </svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-slate-400">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                            )}
+                        </button>
+                    </div>
+
+                    <div className={`${isFiltersExpanded ? 'flex' : 'hidden md:flex'} flex-wrap items-center gap-4 w-full md:w-auto`}>
                         <div className="flex flex-wrap items-center gap-4 bg-slate-800/50 p-2 rounded-lg border border-slate-700 w-full md:w-auto">
                             <div className="flex items-center gap-2">
                                 <label className="text-xs font-black text-indigo-400 uppercase">Ano Base:</label>
@@ -181,57 +199,61 @@ const FinancialForecast: React.FC = () => {
                             <div className="w-px h-6 bg-slate-700 mx-2 hidden sm:block"></div>
 
                             <div className="flex items-center gap-2 flex-grow md:flex-grow-0">
-                                <label className="text-xs font-bold text-slate-500 uppercase hidden sm:block">Período Customizado:</label>
-                                <input type="month" value={rangeStart} onChange={(e) => setRangeStart(e.target.value)} className="w-full md:w-auto p-2 text-sm rounded bg-slate-700 border border-slate-600 outline-none" />
-                                <span className="text-slate-500">até</span>
-                                <input type="month" value={rangeEnd} onChange={(e) => setRangeEnd(e.target.value)} className="w-full md:w-auto p-2 text-sm rounded bg-slate-700 border border-slate-600 outline-none" />
+                                <label className="text-xs font-bold text-slate-500 uppercase hidden sm:block">Período:</label>
+                                <input type="month" value={rangeStart} onChange={(e) => setRangeStart(e.target.value)} className="flex-grow md:flex-grow-0 p-2 text-xs md:text-sm rounded bg-slate-700 border border-slate-600 outline-none" />
+                                <span className="text-slate-500 text-xs text-center">até</span>
+                                <input type="month" value={rangeEnd} onChange={(e) => setRangeEnd(e.target.value)} className="flex-grow md:flex-grow-0 p-2 text-xs md:text-sm rounded bg-slate-700 border border-slate-600 outline-none" />
                             </div>
                         </div>
-                        <button onClick={toggleVisibility} className="p-3 md:p-2.5 bg-slate-800 rounded-md shadow-sm hover:bg-slate-700 border border-white/5 transition-colors" title={isValuesVisible ? "Ocultar" : "Mostrar"}>
-                            {isValuesVisible ? <EyeIcon className="w-5 h-5 text-slate-300" /> : <EyeSlashIcon className="w-5 h-5 text-slate-300" />}
-                        </button>
-                        <button
-                            onClick={() => window.print()}
-                            className="flex items-center gap-2 p-3 md:px-5 md:py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-md transition-all text-sm font-black shadow-xl"
-                        >
-                            <PrinterIcon className="w-5 h-5" />
-                            <span className="hidden md:inline">EXPORTAR RELATÓRIO PDF</span>
-                        </button>
+                        <div className="flex items-center gap-2 w-full md:w-auto">
+                            <button onClick={toggleVisibility} className="flex-1 md:flex-none p-3 md:p-2.5 bg-slate-800 rounded-md shadow-sm hover:bg-slate-700 border border-white/5 transition-colors flex justify-center" title={isValuesVisible ? "Ocultar" : "Mostrar"}>
+                                {isValuesVisible ? <EyeIcon className="w-5 h-5 text-slate-300" /> : <EyeSlashIcon className="w-5 h-5 text-slate-300" />}
+                            </button>
+                            <button
+                                onClick={() => window.print()}
+                                className="flex-1 md:flex-none flex items-center justify-center gap-2 p-3 md:px-5 md:py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-md transition-all text-xs md:text-sm font-black shadow-xl"
+                            >
+                                <PrinterIcon className="w-5 h-5" />
+                                <span className="md:inline">PDF</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div className="hidden print:block mb-10 border-b-4 border-black pb-4 text-black">
-                    <h1 className="text-4xl font-black uppercase tracking-tighter">Relatório Estratégico de Performance</h1>
-                    <div className="mt-4 grid grid-cols-2 text-sm">
-                        <p><strong>CLIENTE/EMPRESA:</strong> {companyContext.currentCompany.name}</p>
-                        <p className="text-right"><strong>PERÍODO ANALISADO:</strong> {rangeStart} a {rangeEnd}</p>
-                        <p><strong>GERADO POR:</strong> FinanSys Pro v3.0</p>
-                        <p className="text-right"><strong>DATA DE EMISSÃO:</strong> {new Date().toLocaleDateString('pt-BR')}</p>
+                <div className="hidden print:block mb-6 border-b-2 border-black pb-3 text-black">
+                    <h1 className="text-3xl font-black uppercase tracking-tight mb-2">Relatório de Projeção Financeira</h1>
+                    <div className="grid grid-cols-2 gap-x-4 text-xs">
+                        <p><strong>EMPRESA:</strong> {companyContext.currentCompany.name}</p>
+                        <p className="text-right"><strong>PERÍODO:</strong> {rangeStart} a {rangeEnd}</p>
+                        <p><strong>SISTEMA:</strong> FinanSys Pro v3.0</p>
+                        <p className="text-right"><strong>EMISSÃO:</strong> {new Date().toLocaleDateString('pt-BR')}</p>
                     </div>
                 </div>
 
                 <section className="bg-slate-800 p-4 rounded-lg shadow-lg mb-10 border border-white/10 print:border-black print:shadow-none chart-container">
-                    <h2 className="font-bold mb-6 text-slate-300 print:text-black uppercase text-xs tracking-widest border-l-4 border-indigo-500 pl-3">Evolução do Fluxo de Caixa</h2>
-                    <div className="h-[450px] w-full flex justify-center">
+                    <h2 className="font-bold mb-6 text-slate-300 print:text-black uppercase text-xs tracking-widest border-l-4 border-indigo-500 pl-3 print:border-l-0 print:mb-3">Evolução do Fluxo de Caixa</h2>
+                    <div className="h-[450px] w-full flex justify-center print:h-[310px] print:block">
                         {isPrinting ? (
-                            <AreaChart width={900} height={450} data={chartData} margin={{ top: 20, right: 20, left: 10, bottom: 60 }}>
-                                <defs>
-                                    <linearGradient id="colorFatPrint" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#059669" stopOpacity={0.8}/>
-                                        <stop offset="95%" stopColor="#059669" stopOpacity={0.2}/>
-                                    </linearGradient>
-                                    <linearGradient id="colorDespPrint" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#dc2626" stopOpacity={0.8}/>
-                                        <stop offset="95%" stopColor="#dc2626" stopOpacity={0.2}/>
-                                    </linearGradient>
-                                </defs>
-                                <XAxis dataKey="name" stroke="#000" fontSize={12} tick={{fill: '#000', fontWeight: 'bold'}} dy={15} />
-                                <YAxis stroke="#000" fontSize={12} tick={{fill: '#000', fontWeight: 'bold'}} tickFormatter={(v) => isValuesVisible ? `R$ ${v/1000}k` : '••••'} />
-                                <CartesianGrid strokeDasharray="3 3" stroke="#ccc" vertical={false} />
-                                <Legend verticalAlign="top" height={70} iconType="rect" iconSize={15} />
-                                <Area type="monotone" name="Faturamento" dataKey="Faturamento" stroke="#059669" strokeWidth={3} fillOpacity={1} fill="url(#colorFatPrint)" />
-                                <Area type="monotone" name="Despesa" dataKey="Despesa" stroke="#dc2626" strokeWidth={3} fillOpacity={1} fill="url(#colorDespPrint)" />
-                            </AreaChart>
+                            <div style={{width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', paddingTop: '5px'}}>
+                                <AreaChart width={640} height={280} data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 20 }}>
+                                    <defs>
+                                        <linearGradient id="colorFatPrint" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#059669" stopOpacity={0.8}/>
+                                            <stop offset="95%" stopColor="#059669" stopOpacity={0.2}/>
+                                        </linearGradient>
+                                        <linearGradient id="colorDespPrint" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#dc2626" stopOpacity={0.8}/>
+                                            <stop offset="95%" stopColor="#dc2626" stopOpacity={0.2}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <XAxis dataKey="name" stroke="#000" fontSize={8} tick={{fill: '#000', fontWeight: '600'}} height={40} />
+                                    <YAxis stroke="#000" fontSize={8} tick={{fill: '#000', fontWeight: '600'}} tickFormatter={(v) => isValuesVisible ? `R$ ${v/1000}k` : '••••'} width={50} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#999" vertical={false} />
+                                    <Legend verticalAlign="top" height={30} iconType="rect" iconSize={8} wrapperStyle={{fontSize: '8px', fontWeight: 'bold'}} />
+                                    <Area type="monotone" name="Faturamento" dataKey="Faturamento" stroke="#059669" strokeWidth={2} fillOpacity={1} fill="url(#colorFatPrint)" />
+                                    <Area type="monotone" name="Despesa" dataKey="Despesa" stroke="#dc2626" strokeWidth={2} fillOpacity={1} fill="url(#colorDespPrint)" />
+                                </AreaChart>
+                            </div>
                         ) : (
                             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
@@ -366,9 +388,9 @@ const FinancialForecast: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="hidden print:block mt-24 pt-8 border-t border-black text-center text-[10pt]">
-                    <p className="font-bold">FinanSys Pro v3.0 — Sistema Inteligente de Gestão Financeira</p>
-                    <p>Relatório emitido em {new Date().toLocaleString('pt-BR')} sob a responsabilidade de {companyContext.currentCompany.name}</p>
+                <div className="hidden print:block mt-16 pt-4 border-t border-gray-400 text-center text-[8pt] text-gray-600">
+                    <p className="font-semibold">FinanSys Pro v3.0 — Sistema de Gestão Financeira</p>
+                    <p>Emitido em {new Date().toLocaleString('pt-BR')} • {companyContext.currentCompany.name}</p>
                 </div>
             </div>
         </div>
